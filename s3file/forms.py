@@ -70,7 +70,6 @@ class S3FileInput(ClearableFileInput):
         )
         css = {
             'all': (
-                's3file/css/bootstrap-progress.min.css',
                 's3file/css/styles.css',
             )
         }

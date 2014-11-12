@@ -1,0 +1,36 @@
+.s3file {
+  display: inline-block;
+  width: 220px;
+}
+
+.s3file .progress {
+  background: #333;
+}
+
+/* inactive */
+
+.s3file .progress,
+.s3file .link,
+.s3file .remove,
+.s3file input {
+  display: none;
+}
+
+/* active progress */
+.s3file.progress-active .progress {
+  display: block;
+}
+
+/* active image */
+.s3file.link-active .link {
+  display: block;
+}
+
+.s3file.link-active .remove {
+  display: inline-block;
+}
+
+/* active form */
+.s3file.form-active input {
+  display: block;
+}

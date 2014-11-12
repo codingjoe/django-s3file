@@ -42,7 +42,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    packages=['s3fie'],
+    packages=['s3file'],
     include_package_data=True,
     cmdclass={'test': PyTest},
 )

@@ -1,4 +1,4 @@
-django-s3fine
+django-s3file
 =============
 
-A lightweight Fine Uploader input for Django and Amazon S3
+A lightweight file upload input for Django and Amazon S3
