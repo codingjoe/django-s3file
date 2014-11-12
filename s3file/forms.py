@@ -30,7 +30,7 @@ class S3FileInput(ClearableFileInput):
         element_id = final_attrs.get('id')
 
         if isinstance(value, File):
-            file_url = value.url
+            file_url = default_storage.url(value.name)
         else:
             file_url = ''
 
