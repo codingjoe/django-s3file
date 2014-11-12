@@ -7,6 +7,6 @@ from .views import S3FineView
 
 urlpatterns = patterns(
     '',
-    url('^s3fine/sign',
-        S3FineView.as_view(), name='s3fine-sign'),
+    url('^s3file/sign',
+        S3FineView.as_view(), name='s3file-sign'),
 )
