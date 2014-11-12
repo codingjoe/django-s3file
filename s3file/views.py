@@ -5,17 +5,20 @@ from base64 import b64encode
 import hashlib
 import hmac
 import json
+import logging
 import os
 import uuid
 
 from django.core.files.storage import default_storage
-from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
 from django.utils import timezone
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
+
+
+logger = logging.getLogger(__name__)
 
 
 class S3FineView(View):
@@ -25,19 +28,25 @@ class S3FineView(View):
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     upload_folder_name = os.path.join('tmp', 's3fine')
 
-    @method_decorator(csrf_exempt)
-    def post(self, request, *args, **kwargs):
-        request_dict = request.DATA
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(S3FineView, cls).as_view(**initkwargs)
+        return csrf_exempt(view)
 
-        if 'filename' not in request_dict or 'mime_type' not in request_dict:
+    def post(self, request, *args, **kwargs):
+        request_dict = request.POST
+
+        if 'name' not in request_dict or 'type' not in request_dict:
             return HttpResponseBadRequest(
-                '"filename" or "mime_type" are missing.'
+                '"name" or "type" are missing.'
             )
 
-        self.file_name = request_dict['filename']
-        self.mime_type = request_dict['mime_type']
+        logger.debug(request_dict)
 
-        return HttpResponse(self.sign())
+        self.file_name = request_dict['name']
+        self.mime_type = request_dict['type']
+
+        return HttpResponse(json.dumps(self.sign()), content_type="application/json")
 
     def get_expiration_date(self):
         expiration_date = timezone.datetime.utcnow() + self.expires

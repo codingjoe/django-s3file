@@ -59,7 +59,6 @@
       id = $el.data("target");
       file_url = $el.find("#" + id).val();
       $fileInput = $el.find("#s3-" + id);
-      console.log($fileInput);
       class_ = (file_url === "" ? "form-active" : "link-active");
       $el.attr("class", "s3file " + class_);
       $el.find(".remove").click(function(e) {

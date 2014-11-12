@@ -15,11 +15,9 @@ $ ->
           data:
             type: data.files[0].type
             name: data.files[0].name
-
           success: (fields) ->
             data.url = fields.form_action
             delete fields.form_action
-
             data.formData = fields
             data.submit()
             return
@@ -54,7 +52,6 @@ $ ->
     id = $el.data("target")
     file_url = $el.find("#"+id).val()
     $fileInput = $el.find("#s3-"+id)
-    console.log $fileInput
     class_ = (if (file_url is "") then "form-active" else "link-active")
     $el.attr "class", "s3file " + class_
     $el.find(".remove").click (e) ->
