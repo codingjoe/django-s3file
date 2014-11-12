@@ -16,7 +16,7 @@ class S3FileInput(ClearableFileInput):
         '    <a class="link" target="_blank" href="{file_url}">{file_url}</a>\n'
         '    <a class="remove" href="javascript: void(0)">{remove}</a>\n'
         '    <input type="hidden" value="initial" id="{element_id}" name="{name}" />\n'
-        '    <input type="file" class="fileinput" id="s3-{element_id}" accept="{acceped_types}" />\n'
+        '    <input type="file" class="fileinput" id="s3-{element_id}" />\n'
         '    <div class="progress progress-striped active">\n'
         '        <div class="progress-bar"></div>\n'
         '    </div>\n'
@@ -26,10 +26,6 @@ class S3FileInput(ClearableFileInput):
     def render(self, name, value, attrs=None):
         final_attrs = self.build_attrs(attrs)
         element_id = final_attrs.get('id')
-        acceped_types = "|".join(
-            content_type
-            for content_type in self.destination['accepted-types']
-        )
 
         if value:
             file_url = default_storage.url(value)
@@ -41,7 +37,6 @@ class S3FileInput(ClearableFileInput):
             file_url=file_url,
             element_id=element_id or '',
             name=name,
-            acceped_types=acceped_types,
             remove=ugettext('remove')
         )
 
