@@ -66,10 +66,10 @@ class S3FileInput(ClearableFileInput):
             's3file/js/jquery.iframe-transport.js',
             's3file/js/jquery.ui.widget.js',
             's3file/js/jquery.fileupload.js',
-            's3file/js/s3direct.js',
+            's3file/js/s3file.js',
         )
         css = {
             'all': (
-                's3file/css/styles.css',
+                's3file/css/s3file.css',
             )
         }
