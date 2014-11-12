@@ -1,5 +1,20 @@
 #!/usr/bin/env python
 from setuptools import setup, Command
+import shutil
+
+
+shutil.copyfile(
+    'vendor/jquery-fileupload/js/jquery.fileupload.js',
+    's3file/static/s3file/js/jquery.fileupload.js'
+)
+shutil.copyfile(
+    'vendor/jquery-fileupload/js/jquery.iframe-transport.js',
+    's3file/static/s3file/js/jquery.iframe-transport.js'
+)
+shutil.copyfile(
+    'vendor/jquery-fileupload/js/vendor/jquery.ui.widget.js',
+    's3file/static/s3file/js/jquery.ui.widget.js'
+)
 
 
 class PyTest(Command):
@@ -21,7 +36,7 @@ class PyTest(Command):
 
 setup(
     name='django-s3file',
-    version='0.1.4',
+    version='0.1.5',
     description='A lightweight Fine Uploader input for Django and Amazon S3',
     author='codingjoe',
     url='https://github.com/codingjoe/django-s3file',
