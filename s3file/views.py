@@ -37,12 +37,12 @@ class S3FineView(View):
         request_dict = request.POST
 
         if 'name' not in request_dict or 'type' not in request_dict:
+            logger.warning('"name" or "type" are missing request: "%s"', request_dict)
             return HttpResponseBadRequest(
-                '"name" or "type" are missing.'
+                '"name" or "type" are missing in request.'
             )
 
         logger.debug(request_dict)
-
         self.file_name = request_dict['name']
         self.mime_type = request_dict['type']
 

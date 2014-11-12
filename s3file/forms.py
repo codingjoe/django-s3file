@@ -1,13 +1,16 @@
 import logging
 from urlparse import urlparse
 import urllib2
-from django.core.files import File
 
+from django.core.files import File
 from django.forms.widgets import ClearableFileInput
 from django.core.files.storage import default_storage
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext
+
+
+logger = logging.getLogger(__name__)
 
 
 class S3FileInput(ClearableFileInput):
@@ -52,16 +55,14 @@ class S3FileInput(ClearableFileInput):
 
     def value_from_datadict(self, data, files, name):
         url = data.get(name)
-        if url:
-            if url == 'initial':
-                return False
+        if not url:
+            return False
+        elif url == 'initial':
+            return None
+        else:
             filename = urllib2.unquote(urlparse(url).path)
-            try:
-                f = default_storage.open(filename)
-                return f
-            except IOError:
-                return None
-        return None
+            f = default_storage.open(filename)
+            return f
 
     class Media:
         js = (
