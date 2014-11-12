@@ -11,7 +11,7 @@ import uuid
 from django.core.files.storage import default_storage
 from django.utils.decorators import method_decorator
 from django.utils.functional import cached_property
-from django.utils.timezone import datetime
+from django.utils import timezone
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
@@ -19,7 +19,7 @@ from django.views.generic import View
 
 
 class S3FineView(View):
-    expires = datetime.timedelta(hours=1)
+    expires = timezone.timedelta(hours=1)
     access_key = settings.AWS_ACCESS_KEY_ID
     secret_access_key = settings.AWS_SECRET_ACCESS_KEY
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
@@ -40,7 +40,7 @@ class S3FineView(View):
         return HttpResponse(self.sign())
 
     def get_expiration_date(self):
-        expiration_date = datetime.utcnow() + self.expires
+        expiration_date = timezone.datetime.utcnow() + self.expires
         return expiration_date.strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
     def get_secret_access_key(self):
