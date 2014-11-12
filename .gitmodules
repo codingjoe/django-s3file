@@ -1,0 +1,3 @@
+[submodule "vendor/jquery-fileupload"]
+	path = vendor/jquery-fileupload
+	url = git://github.com/blueimp/jQuery-File-Upload
