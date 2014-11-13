@@ -28,26 +28,6 @@ class S3FileViewMixin(object):
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     upload_path = settings.S3FILE_UPLOAD_PATH
 
-    @classmethod
-    def as_view(cls, **initkwargs):
-        view = super(S3FileViewMixin, cls).as_view(**initkwargs)
-        return csrf_exempt(view)
-
-    def post(self, request, *args, **kwargs):
-        request_dict = request.POST
-
-        if 'name' not in request_dict or 'type' not in request_dict:
-            logger.warning('"name" or "type" are missing request: "%s"', request_dict)
-            return HttpResponseBadRequest(
-                '"name" or "type" are missing in request.'
-            )
-
-        logger.debug(request_dict)
-        self.file_name = request_dict['name']
-        self.mime_type = request_dict['type']
-
-        return HttpResponse(json.dumps(self.sign()), content_type="application/json")
-
     def get_expiration_date(self):
         expiration_date = timezone.datetime.utcnow() + self.expires
         return expiration_date.strftime('%Y-%m-%dT%H:%M:%S.000Z')
@@ -111,4 +91,23 @@ class S3FileViewMixin(object):
 
 
 class S3FileView(S3FileViewMixin, View):
-    pass
+
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(S3FileView, cls).as_view(**initkwargs)
+        return csrf_exempt(view)
+
+    def post(self, request, *args, **kwargs):
+        request_dict = request.POST
+
+        if 'name' not in request_dict or 'type' not in request_dict:
+            logger.warning('"name" or "type" are missing request: "%s"', request_dict)
+            return HttpResponseBadRequest(
+                '"name" or "type" are missing in request.'
+            )
+
+        logger.debug(request_dict)
+        self.file_name = request_dict['name']
+        self.mime_type = request_dict['type']
+
+        return HttpResponse(json.dumps(self.sign()), content_type="application/json")
