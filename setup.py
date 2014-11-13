@@ -21,7 +21,7 @@ class PyTest(Command):
 
 setup(
     name='django-s3file',
-    version='0.2.0',
+    version='0.3.0',
     description='A lightweight Fine Uploader input for Django and Amazon S3',
     author='codingjoe',
     url='https://github.com/codingjoe/django-s3file',

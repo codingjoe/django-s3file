@@ -21,16 +21,16 @@ from django.views.generic import View
 logger = logging.getLogger(__name__)
 
 
-class S3FineView(View):
+class S3FileViewMixin(object):
     expires = timezone.timedelta(hours=1)
     access_key = settings.AWS_ACCESS_KEY_ID
     secret_access_key = settings.AWS_SECRET_ACCESS_KEY
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
-    upload_folder_name = os.path.join('tmp', 's3fine')
+    upload_path = settings.S3FILE_UPLOAD_PATH
 
     @classmethod
     def as_view(cls, **initkwargs):
-        view = super(S3FineView, cls).as_view(**initkwargs)
+        view = super(S3FileViewMixin, cls).as_view(**initkwargs)
         return csrf_exempt(view)
 
     def post(self, request, *args, **kwargs):
@@ -76,7 +76,7 @@ class S3FineView(View):
     @cached_property
     def upload_folder(self):
         return os.path.join(
-            self.upload_folder_name,
+            self.upload_path,
             uuid.uuid4().hex,
         )
 
@@ -108,3 +108,7 @@ class S3FineView(View):
             "acl": "public-read",
             "Content-Type": self.mime_type
         }
+
+
+class S3FileView(S3FileViewMixin, View):
+    pass
