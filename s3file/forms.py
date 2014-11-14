@@ -45,7 +45,7 @@ class S3FileInput(ClearableFileInput):
             element_id=element_id or '',
             name=name,
             value=input_value,
-            remove=self.clear_checkbox_label
+            remove=unicode(self.clear_checkbox_label)
         )
 
         return mark_safe(output)
