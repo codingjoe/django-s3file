@@ -54,13 +54,12 @@ class S3FileInput(ClearableFileInput):
         return mark_safe(output)
 
     def value_from_datadict(self, data, files, name):
-        url = data.get(name)
-        if not url:
+        filename = data.get(name)
+        if not filename:
             return None
-        elif url == 'initial':
+        elif filename == 'initial':
             return False
         else:
-            filename = urllib2.unquote(urlparse(url).path)
             f = default_storage.open(filename)
             return f
 

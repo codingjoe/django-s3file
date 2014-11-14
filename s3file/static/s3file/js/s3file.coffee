@@ -16,6 +16,7 @@ $ ->
             type: data.files[0].type
             name: data.files[0].name
           success: (fields) ->
+            $el.find("input[type=hidden]").val fields.key
             data.url = fields.form_action
             delete fields.form_action
             data.formData = fields
@@ -39,7 +40,6 @@ $ ->
         file_name = url.replace(/^.*[\\\/]/, "")
         $el.find(".link").attr("href", url).text file_name
         $el.attr "class", "s3file link-active"
-        $el.find("input[type=hidden]").val url
         $el.find(".progress-bar").css width: "0%"
         $(".submit-row input[type=submit]").prop "disabled", false
         return
