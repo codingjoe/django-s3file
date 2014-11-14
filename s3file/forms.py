@@ -1,13 +1,10 @@
 import logging
-from urlparse import urlparse
-import urllib2
 
 from django.core.files import File
 from django.forms.widgets import ClearableFileInput
 from django.core.files.storage import default_storage
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse_lazy
-from django.utils.translation import ugettext
 
 
 logger = logging.getLogger(__name__)
@@ -48,7 +45,7 @@ class S3FileInput(ClearableFileInput):
             element_id=element_id or '',
             name=name,
             value=input_value,
-            remove=ugettext('remove')
+            remove=self.clear_checkbox_label
         )
 
         return mark_safe(output)
