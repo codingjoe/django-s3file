@@ -17,7 +17,7 @@ class S3FileInput(ClearableFileInput):
     signing_url = reverse_lazy('s3file-sign')
     template = (
         '<div class="s3file" data-url="{signing_url}" data-target="{element_id}">\n'
-        '    <a class="link" target="_blank" href="{file_url}">{file_url}</a>\n'
+        '    <a class="link" target="_blank" href="{file_url}">{file_name}</a>\n'
         '    <a class="remove" href="javascript: void(0)">{remove}</a>\n'
         '    <input type="hidden" value="{value}" id="{element_id}" name="{name}" />\n'
         '    <input type="file" class="fileinput" id="s3-{element_id}" />\n'
@@ -44,6 +44,7 @@ class S3FileInput(ClearableFileInput):
         output = self.template.format(
             signing_url=self.signing_url,
             file_url=file_url,
+            file_name=value.name,
             element_id=element_id or '',
             name=name,
             value=input_value,
@@ -58,9 +59,12 @@ class S3FileInput(ClearableFileInput):
             return None
         elif filename == 'initial':
             return False
-        else:
+        try:
             f = default_storage.open(filename)
             return f
+        except IOError:
+            logger.exception('File "%s" could not be found.', filename)
+            return False
 
     class Media:
         js = (
