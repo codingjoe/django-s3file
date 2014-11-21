@@ -33,8 +33,10 @@ class S3FileInput(ClearableFileInput):
 
         if isinstance(value, File):
             file_url = default_storage.url(value.name)
+            file_name = value.name
         else:
             file_url = ''
+            file_name = ''
 
         if file_url:
             input_value = 'initial'
@@ -44,7 +46,7 @@ class S3FileInput(ClearableFileInput):
         output = self.template.format(
             signing_url=self.signing_url,
             file_url=file_url,
-            file_name=value.name,
+            file_name=file_name,
             element_id=element_id or '',
             name=name,
             value=input_value,
