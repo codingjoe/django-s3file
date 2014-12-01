@@ -1,6 +1,10 @@
+# -*- coding:utf-8 -*-
 from __future__ import (unicode_literals)
 
 import logging
+import os
+
+from django.conf import settings
 
 from django.core.files import File
 from django.forms.widgets import ClearableFileInput
@@ -13,6 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 class S3FileInput(ClearableFileInput):
+    """
+    FileInput that uses JavaScript to directly upload to Amazon S3.
+    """
     needs_multipart_form = False
     signing_url = reverse_lazy('s3file-sign')
     template = (
@@ -33,7 +40,7 @@ class S3FileInput(ClearableFileInput):
 
         if isinstance(value, File):
             file_url = default_storage.url(value.name)
-            file_name = value.name
+            file_name = os.path.basename(value.name)
         else:
             file_url = ''
             file_name = ''
@@ -80,3 +87,11 @@ class S3FileInput(ClearableFileInput):
                 's3file/css/s3file.css',
             )
         }
+
+
+def AutoFileInput(*args, **kwargs):
+    if hasattr(settings, 'AWS_SECRET_ACCESS_KEY') \
+            and settings.AWS_SECRET_ACCESS_KEY:
+        return S3FileInput(*args, **kwargs)
+    else:
+        return ClearableFileInput(*args, **kwargs)

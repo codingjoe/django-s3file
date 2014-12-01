@@ -110,4 +110,7 @@ class S3FileView(S3FileViewMixin, View):
         self.file_name = request_dict['name']
         self.mime_type = request_dict['type']
 
-        return HttpResponse(json.dumps(self.sign()), content_type="application/json")
+        return HttpResponse(
+            json.dumps(self.sign()),
+            content_type="application/json"
+        )
