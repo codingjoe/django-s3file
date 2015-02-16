@@ -1,21 +1,35 @@
 language: python
+sudo: false
 python:
-    - "2.6"
-    - "2.7"
-    - "3.2"
-    - "3.3"
-    - "3.4"
+  - "2.6"
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "pypy"
+  - "pypy3"
 env:
-    - DJANGO=1.5.11
-    - DJANGO=1.6.8
-    - DJANGO=1.7.1
+  global:
+    - DISPLAY=:99.0
+  matrix:
+    - DJANGO="<1.6,>=1.5"
+    - DJANGO="<1.7,>=1.6"
+    - DJANGO="<1.8,>=1.7"
+    - DJANGO="<1.9,>=1.8"
+
 matrix:
-  exclude:
+  allow_failures:
+    - env: DJANGO="<1.6,>=1.5"
+    - env: DJANGO="<1.7,>=1.6"
     - python: "2.6"
-      env: DJANGO=1.7.1
+    - python: "3.2"
 install:
-    - pip install Django==$DJANGO --use-mirrors
-    - pip install pytest pytest-pep8 pytest-flakes django-pytest --use-mirrors
-    - pip install -r requirements.txt --use-mirrors
+  - pip install --upgrade pip
+  - pip install .
+  - pip install Django$DJANGO
+  - pip install pytest pytest-pep8 pytest-flakes pytest-django selenium
+  - pip install coveralls
+  - sh -e /etc/init.d/xvfb start
 script:
-    - python setup.py test
+  coverage run --source=s3file runtests.py
+after_success:
+  coveralls

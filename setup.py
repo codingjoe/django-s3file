@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from setuptools import setup, Command
+from setuptools import Command, setup
 
 
 class PyTest(Command):
@@ -21,7 +21,7 @@ class PyTest(Command):
 
 setup(
     name='django-s3file',
-    version='0.4.1',
+    version='0.5.0',
     description='A lightweight Fine Uploader input for Django and Amazon S3',
     author='codingjoe',
     url='https://github.com/codingjoe/django-s3file',
@@ -45,7 +45,7 @@ setup(
     packages=['s3file'],
     include_package_data=True,
     install_requires=[
-        'django-appconf==0.6',
+        'django-appconf>=0.6',
     ],
     cmdclass={'test': PyTest},
 )

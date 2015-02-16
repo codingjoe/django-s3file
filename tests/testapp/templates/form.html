@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+    <script type="text/javascript">
+        window.onerror = function (msg) {
+            document.getElementById('body').setAttribute("JSError", msg);
+        }
+    </script>
+    {{ form.media.css }}
+</head>
+<body id="body">
+<form method="post" action="">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit Form"/>
+</form>
+{{ form.media.js }}
+</body>
