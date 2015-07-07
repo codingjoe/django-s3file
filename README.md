@@ -1,12 +1,15 @@
 # django-s3file
 
-[![Join the chat at https://gitter.im/codingjoe/django-s3file](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/codingjoe/django-s3file?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A lightweight file upload input for Django and Amazon S3.
 
+[![PyPi Version](https://img.shields.io/pypi/v/django-s3file.svg)](https://pypi.python.org/pypi/django-s3file/)
 [![Build Status](https://travis-ci.org/codingjoe/django-s3file.svg?branch=master)](https://travis-ci.org/codingjoe/django-s3file)
+[![Code Health](https://landscape.io/github/codingjoe/django-s3file/master/landscape.svg?style=flat)](https://landscape.io/github/codingjoe/django-s3file/master)
 [![Test Coverage](https://coveralls.io/repos/codingjoe/django-s3file/badge.png?branch=master)](https://coveralls.io/r/codingjoe/django-s3file)
 [![Code health](https://scrutinizer-ci.com/g/codingjoe/django-s3file/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/codingjoe/django-s3file/?branch=master)
+[![Join the chat at https://gitter.im/codingjoe/django-s3file](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/codingjoe/django-s3file?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/codingjoe/django-s3file/master/LICENSE)
 
 
 ## Features
