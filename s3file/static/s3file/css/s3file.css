@@ -6,8 +6,8 @@
   background: #333;
 }
 .s3file .progress,
-.s3file .link,
-.s3file .remove,
+.s3file .file-link,
+.s3file .file-remove,
 .s3file input {
   display: none;
 }
