@@ -14,10 +14,10 @@
 .s3file.progress-active .progress {
   display: block;
 }
-.s3file.link-active .link {
+.s3file.link-active .file-link {
   display: block;
 }
-.s3file.link-active .remove {
+.s3file.link-active .file-remove {
   display: inline-block;
 }
 .s3file.form-active input {
