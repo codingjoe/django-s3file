@@ -87,19 +87,8 @@ class S3FileInput(ClearableFileInput):
         }
 
 
-def AutoFileInput(*args, **kwargs):
-    """
-    A factory method that returns ether an instance of S3FileInput
-    of ClearableFileInput depending on whether or not the S3 Key is
-    set in django.config.settings.
-    :
-        Settings example:
-        AWS_SECRET_ACCESS_KEY='asdf'
-    :
-    :return: S3FileInput, django.forms.ClearableFileInput
-    """
-    if hasattr(settings, 'AWS_SECRET_ACCESS_KEY') \
-            and settings.AWS_SECRET_ACCESS_KEY:
-        return S3FileInput(*args, **kwargs)
-    else:
-        return ClearableFileInput(*args, **kwargs)
+if hasattr(settings, 'AWS_SECRET_ACCESS_KEY') \
+        and settings.AWS_SECRET_ACCESS_KEY:
+    AutoFileInput = S3FileInput
+else:
+    AutoFileInput = ClearableFileInput
