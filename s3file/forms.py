@@ -69,7 +69,8 @@ class S3FileInput(ClearableFileInput):
         elif filename == 'initial':
             return False
         try:
-            f = default_storage.open(filename)
+            relative_filename = filename[len(default_storage.url('')):]
+            f = default_storage.open(relative_filename)
             return f
         except IOError:
             logger.exception('File "%s" could not be found.', filename)

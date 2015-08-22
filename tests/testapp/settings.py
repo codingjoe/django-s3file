@@ -28,7 +28,7 @@ MIDDLEWARE_CLASSES = (
 SECRET_KEY = 'SuperSecretKey'
 STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
+MEDIA_URL = 'https://s3file.aws.amazon.com/'
 SITE_ID = 1
 ROOT_URLCONF = 'tests.testapp.urls'
 
