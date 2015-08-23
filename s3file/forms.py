@@ -5,7 +5,6 @@ import logging
 import os
 
 from django.conf import settings
-from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse_lazy
 from django.forms.widgets import ClearableFileInput
@@ -25,7 +24,7 @@ class S3FileInput(ClearableFileInput):
         '<div class="s3file" data-policy-url="{policy_url}">'
         '  <a class="file-link" target="_blank" href="{file_url}">{file_name}</a>'
         '  <a class="file-remove" href="#remove">Remove</a>'
-        '  <input class="file-url" type="hidden" value="{file_url}"'
+        '  <input class="file-url" type="hidden" value="{value}"'
         ' id="{element_id}" name="{name}" />'
         '  <input class="file-input" type="file" />'
         '  <div class="progress progress-striped active">'
@@ -37,14 +36,12 @@ class S3FileInput(ClearableFileInput):
     def render(self, name, value, attrs=None):
         final_attrs = self.build_attrs(attrs)
         element_id = final_attrs.get('id')
-
-        if isinstance(value, File):
-            file_url = default_storage.url(value.name)
+        if self.is_initial(value):
+            file_url = value.url
             file_name = os.path.basename(value.name)
         else:
             file_url = ''
             file_name = ''
-
         if file_url:
             input_value = 'initial'
         else:
@@ -65,9 +62,9 @@ class S3FileInput(ClearableFileInput):
     def value_from_datadict(self, data, files, name):
         filename = data.get(name)
         if not filename:
-            return None
-        elif filename == 'initial':
             return False
+        elif filename == 'initial':
+            return None
         try:
             relative_filename = filename[len(default_storage.url('')):]
             f = default_storage.open(relative_filename)

@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 
 import os
 import tempfile
+from django.core.files.base import ContentFile
 
 import pytest
 from selenium import webdriver
@@ -37,3 +38,10 @@ def upload_file():
     with open(file_name, 'w') as f:
         f.write('Hello World!')
     return file_name
+
+
+@pytest.fixture
+def filemodel(db):
+    from tests.testapp.models import FileModel
+
+    return FileModel.objects.create(file=ContentFile('foobar', 'test.txt'))
