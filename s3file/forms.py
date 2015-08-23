@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+import django
 
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -58,6 +59,11 @@ class S3FileInput(ClearableFileInput):
         )
 
         return mark_safe(output)
+
+    def is_initial(self, value):
+        if django.VERSION < (1, 8):
+            return bool(value and hasattr(value, 'url'))
+        return super(S3FileInput, self).is_initial(value)
 
     def value_from_datadict(self, data, files, name):
         filename = data.get(name)
