@@ -1,25 +1,10 @@
-.s3file {
-  display: inline-block;
-  width: 220px;
-}
-.s3file .progress {
-  background: #333;
-}
 .s3file .progress,
-.s3file .file-link,
-.s3file .file-remove,
-.s3file input {
+{
   display: none;
 }
 .s3file.progress-active .progress {
   display: block;
 }
-.s3file.link-active .file-link {
-  display: block;
-}
-.s3file.link-active .file-remove {
-  display: inline-block;
-}
-.s3file.form-active input {
-  display: block;
+.s3file.progress-active input[type="file"] {
+  display: none;
 }

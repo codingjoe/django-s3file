@@ -1,6 +1,8 @@
 import os.path
+import tempfile
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEBUG = True
 
 DATABASES = {
     'default': {
@@ -27,10 +29,10 @@ MIDDLEWARE_CLASSES = (
 
 SECRET_KEY = 'SuperSecretKey'
 STATIC_URL = '/static/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = 'https://s3file.aws.amazon.com/'
-SITE_ID = 1
+MEDIA_ROOT = tempfile.mkdtemp()
 ROOT_URLCONF = 'tests.testapp.urls'
+MEDIA_URL = '/s3/'
+SITE_ID = 1
 
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, "templates"),

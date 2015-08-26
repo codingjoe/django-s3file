@@ -1,7 +1,8 @@
 language: python
 sudo: false
+cache:
+  - pip
 python:
-  - "2.6"
   - "2.7"
   - "3.3"
   - "3.4"
@@ -20,16 +21,18 @@ matrix:
   allow_failures:
     - env: DJANGO="<1.6,>=1.5"
     - env: DJANGO="<1.7,>=1.6"
-    - python: "2.6"
-    - python: "3.2"
 install:
   - pip install --upgrade pip
   - pip install .
   - pip install Django$DJANGO
-  - pip install pytest pytest-pep8 pytest-flakes pytest-django selenium
-  - pip install coveralls
+  - pip install -U pytest pytest-django selenium
+  - pip install -U flake8 pep8-naming isort pep257
+  - pip install -U coveralls
   - sh -e /etc/init.d/xvfb start
 script:
-  coverage run --source=s3file runtests.py
+  - isort --check-only --recursive --diff .
+  - flake8 --jobs=2 .
+  - pep257 s3file
+  - coverage run --source=s3file runtests.py
 after_success:
-  coveralls
+  - coveralls

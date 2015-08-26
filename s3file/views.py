@@ -9,7 +9,6 @@ import os
 import uuid
 from base64 import b64encode
 
-from django.conf import settings
 from django.core.files.storage import default_storage
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.encoding import force_text
@@ -18,10 +17,23 @@ from django.utils.six import binary_type
 from django.utils.timezone import datetime, timedelta
 from django.views.generic import View
 
+from .conf import settings
+
 logger = logging.getLogger('s3file')
 
 
 class S3FileViewMixin(object):
+
+    """
+    Mixin to handle file upload signing for S3 buckets.
+
+    Can be used in all kinds of views.
+    Simply set :attr:`mime_type` and :attr:`file_name`
+    and call :func:`sign`.
+    The sign method returns a dictionary containing an
+    S3 upload signature.
+    """
+
     expires = timedelta(hours=1)
     access_key = settings.AWS_ACCESS_KEY_ID
     secret_access_key = settings.AWS_SECRET_ACCESS_KEY
@@ -71,6 +83,11 @@ class S3FileViewMixin(object):
         return default_storage.url('')
 
     def sign(self):
+        """
+        Return S3 upload signature.
+
+        :rtype: dict
+        """
         signature = hmac.new(
             self.get_secret_access_key(),
             self.get_policy(),
@@ -93,6 +110,8 @@ class S3FileViewMixin(object):
 
 class S3FileView(S3FileViewMixin, View):
 
+    """View to sign upload requests to an S3 bucket."""
+
     def post(self, request, *args, **kwargs):
         request_dict = request.POST
 
@@ -102,7 +121,6 @@ class S3FileView(S3FileViewMixin, View):
                 '"name" or "type" are missing in request.'
             )
 
-        logger.debug(request_dict)
         self.file_name = request_dict['name']
         self.mime_type = request_dict['type']
 

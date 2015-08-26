@@ -1,34 +1,16 @@
 #!/usr/bin/env python
-from setuptools import Command, setup
-
-
-class PyTest(Command):
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        import sys
-        import subprocess
-
-        errno = subprocess.call([sys.executable, 'runtests.py'])
-        raise SystemExit(errno)
-
+from setuptools import setup
 
 setup(
     name='django-s3file',
-    version='0.6.2',
+    version='1.0.0',
     description='A lightweight Fine Uploader input for Django and Amazon S3',
     author='codingjoe',
     url='https://github.com/codingjoe/django-s3file',
     author_email='info@johanneshoppe.com',
     license='MIT',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
@@ -47,5 +29,4 @@ setup(
     install_requires=[
         'django-appconf>=0.6',
     ],
-    cmdclass={'test': PyTest},
 )

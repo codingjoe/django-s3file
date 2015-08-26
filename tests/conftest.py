@@ -3,9 +3,9 @@ from __future__ import absolute_import, unicode_literals
 
 import os
 import tempfile
-from django.core.files.base import ContentFile
 
 import pytest
+from django.core.files.base import ContentFile
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 

@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
+import time
+
 from django.http import response
 from django.views import generic
 
@@ -8,6 +10,7 @@ from django.views import generic
 class S3MockView(generic.View):
 
     def post(self, request):
+        time.sleep(1)
         return response.HttpResponse(
             '<?xml version="1.0" encoding="UTF-8"?>'
             '<PostResponse>'

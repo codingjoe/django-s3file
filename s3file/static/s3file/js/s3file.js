@@ -81,19 +81,11 @@
 
     var error = function(el, msg) {
         el.className = 's3file form-active'
-        el.querySelector('.file-input').value = ''
-        throw Error(msg)
+        el.querySelector('input[type="file"]').value = ''
         alert(msg)
     }
 
     var update = function(el, xml) {
-        var link = el.querySelector('.file-link'),
-            url  = el.querySelector('.file-url')
-
-        url.value = parseURL(xml)
-        link.setAttribute('href', url.value)
-        link.innerHTML = url.value.split('/').pop()
-
         el.className = 's3file link-active'
         el.querySelector('.bar').style.width = '0%'
     }
@@ -138,7 +130,7 @@
 
     var getUploadURL = function(e) {
         var el       = e.target.parentElement,
-            file     = el.querySelector('.file-input').files[0],
+            file     = el.querySelector('input[type="file"]').files[0],
             url      = el.getAttribute('data-policy-url'),
             form     = new FormData(),
             headers  = {'X-CSRFToken': getCookie('csrftoken')}
@@ -163,24 +155,9 @@
         })
     }
 
-    var removeUpload = function(e) {
-        e.preventDefault()
-
-        var el = e.target.parentElement
-        el.querySelector('.file-url').value = ''
-        el.querySelector('.file-input').value = ''
-        el.className = 's3file form-active'
-    }
-
     var addHandlers = function(el) {
-        var url    = el.querySelector('.file-url'),
-            input  = el.querySelector('.file-input'),
-            remove = el.querySelector('.file-remove'),
-            status = (url.value === '') ? 'form' : 'link'
+        var input  = el.querySelector('input[type="file"]')
 
-        el.className = 's3file ' + status + '-active'
-
-        remove.addEventListener('click', removeUpload, false)
         input.addEventListener('change', getUploadURL, false)
     }
 

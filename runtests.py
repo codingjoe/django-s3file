@@ -19,6 +19,11 @@
 # have a complete pytest installation by using this command on the command-
 # line: ``py.test --genscript=runtests.py``.
 
+import base64
+import sys
+import zlib
+
+
 sources = """
 eNrsvWt3G1l2KDb35nFjJNf2TW7yLVk1UOiqkkCI0rTtMW6jxxq1NJY9091LUnvai8MLFYEiWc1C
 FVRVEMmMJysrfyIf8yPyI/K3sl/nWacAUP0Ye620PSIJnLPPa5/9Ovvxf/zbP7z/SfL1n2/upouy
@@ -3017,17 +3022,13 @@ zW6FYLg8lk11J7XOWfVCVvm0F2KiNyaeKDgCPH1V7Pz8ZRkrlP2jmdAROkxdP2RJcQirjZ8kIFF/
 mH1szWdxTVmKQB+pisiXvm43FLwGlW0kHFWj8Pfe+/9+GP1/axf19w==
 """
 
-import base64
-import sys
-import zlib
-
 
 class DictImporter(object):
     def __init__(self, sources):
         self.sources = sources
 
     def find_module(self, fullname, path=None):
-        if fullname == "argparse" and sys.version_info >= (2,7):
+        if fullname == "argparse" and sys.version_info >= (2, 7):
             # we were generated with <python2.7 (which pulls in argparse)
             # but we are running now on a stdlib which has it, so use that.
             return None
@@ -3054,7 +3055,7 @@ class DictImporter(object):
         if is_pkg:
             module.__path__ = [fullname]
 
-        do_exec(co, module.__dict__) # noqa
+        do_exec(co, module.__dict__)  # NoQA
         return sys.modules[fullname]
 
     def get_source(self, name):
@@ -3063,14 +3064,17 @@ class DictImporter(object):
             res = self.sources.get(name + '.__init__')
         return res
 
+
 if __name__ == "__main__":
     if sys.version_info >= (3, 0):
         exec("def do_exec(co, loc): exec(co, loc)\n")
         import pickle
-        sources = sources.encode("ascii") # ensure bytes
+
+        sources = sources.encode("ascii")  # ensure bytes
         sources = pickle.loads(zlib.decompress(base64.decodebytes(sources)))
     else:
         import cPickle as pickle
+
         exec("def do_exec(co, loc): exec co in loc\n")
         sources = pickle.loads(zlib.decompress(base64.decodestring(sources)))
 
@@ -3078,4 +3082,4 @@ if __name__ == "__main__":
     sys.meta_path.insert(0, importer)
 
     entry = "import pytest; raise SystemExit(pytest.cmdline.main())"
-    do_exec(entry, locals()) # noqa
+    do_exec(entry, locals())  # NoQA

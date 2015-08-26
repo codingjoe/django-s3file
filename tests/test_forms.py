@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse
-from tests.testapp.forms import UploadForm, ClearableUploadForm
+
+from tests.testapp.forms import ClearableUploadForm, UploadForm
 
 
 class TestS3FileInput(object):
@@ -18,7 +20,7 @@ class TestS3FileInput(object):
 
     def test_value_from_datadict_initial_data(self, filemodel):
         form = UploadForm(instance=filemodel)
-        assert 'initial' in form.as_p(), form.as_p()
+        assert filemodel.file.name in form.as_p(), form.as_p()
         assert not form.is_valid()
 
     def test_same_url(self, filemodel):
@@ -38,7 +40,7 @@ class TestS3FileInput(object):
 
     def test_initial_no_file_uploaded(self, filemodel):
 
-        form = UploadForm(data={'file': 'initial'}, instance=filemodel)
+        form = UploadForm(data={'file': ''}, instance=filemodel)
         assert form.is_valid(), form.errors
         assert not form.has_changed()
         assert form.cleaned_data['file'] == filemodel.file
@@ -48,7 +50,7 @@ class TestS3FileInput(object):
         assert form.is_valid()
         assert form.cleaned_data['file'] == filemodel.file
 
-    def test_initial_no_fallback(self, filemodel):
-        form = ClearableUploadForm(data={'file': ''}, instance=filemodel)
+    def test_clear(self, filemodel):
+        form = ClearableUploadForm(data={'file-clear': '1'}, instance=filemodel)
         assert form.is_valid()
         assert not form.cleaned_data['file']
