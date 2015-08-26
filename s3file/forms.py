@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import logging
 import os
+from urllib import unquote_plus
 import django
 
 from django.conf import settings
@@ -72,7 +73,7 @@ class S3FileInput(ClearableFileInput):
         elif filename == 'initial':
             return None
         try:
-            relative_filename = filename[len(default_storage.url('')):]
+            relative_filename = unquote_plus(filename[len(default_storage.url('')):])
             f = default_storage.open(relative_filename)
             return f
         except IOError:
