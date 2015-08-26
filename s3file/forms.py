@@ -3,14 +3,16 @@ from __future__ import unicode_literals
 
 import logging
 import os
-import django
 
+import django
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse_lazy
 from django.forms.widgets import ClearableFileInput
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
+
+from six.moves.urllib.parse import unquote_plus
 
 logger = logging.getLogger('s3file')
 
@@ -72,7 +74,7 @@ class S3FileInput(ClearableFileInput):
         elif filename == 'initial':
             return None
         try:
-            relative_filename = filename[len(default_storage.url('')):]
+            relative_filename = unquote_plus(filename[len(default_storage.url('')):])
             f = default_storage.open(relative_filename)
             return f
         except IOError:
