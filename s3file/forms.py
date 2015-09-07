@@ -30,7 +30,7 @@ class S3FileInput(ClearableFileInput):
         '{input}'
         '<input type="file" />'
         '<div class="progress progress-striped active">'
-        '<div class="bar" />'
+        '<div class="progress-bar" />'
         '</div>'
         '</div>'
     )

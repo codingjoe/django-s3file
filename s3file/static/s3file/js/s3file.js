@@ -74,20 +74,21 @@
         if(data.lengthComputable === false || showProgress === false) return
 
         var pcnt = Math.round(data.loaded * 100 / data.total),
-            bar  = el.querySelector('.bar')
+            bar  = el.querySelector('.progress-bar')
 
         bar.style.width = pcnt + '%'
+        bar.innerHTML = pcnt + '%'
     }
 
     var error = function(el, msg) {
-        el.className = 's3file form-active'
+        el.className = 's3file'
         el.querySelector('input[type="file"]').value = ''
         alert(msg)
     }
 
     var update = function(el, xml) {
-        el.className = 's3file link-active'
-        el.querySelector('.bar').style.width = '0%'
+        el.className = 's3file'
+        el.querySelector('.progress-bar').style.width = '0%'
     }
 
     var concurrentUploads = 0
