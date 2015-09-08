@@ -87,6 +87,7 @@
     }
 
     var update = function(el, xml) {
+        el.querySelector('input[type="hidden"]').value = parseURL(xml)
         el.className = 's3file'
         el.querySelector('.progress-bar').style.width = '0%'
     }

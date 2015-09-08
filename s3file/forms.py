@@ -23,12 +23,11 @@ class S3FileInput(ClearableFileInput):
     """FileInput that uses JavaScript to directly upload to Amazon S3."""
 
     needs_multipart_form = False
-    input_type = 'hidden'
     signing_url = reverse_lazy('s3file-sign')
     template = (
         '<div class="s3file" data-policy-url="{policy_url}">'
         '{input}'
-        '<input type="file" />'
+        '<input name="{name}" type="hidden" />'
         '<div class="progress progress-striped active">'
         '<div class="progress-bar" />'
         '</div>'
@@ -36,9 +35,12 @@ class S3FileInput(ClearableFileInput):
     )
 
     def render(self, name, value, attrs=None):
+        parent_input = super(S3FileInput, self).render(name, value, attrs=None)
+        parent_input = parent_input.replace('name="{}"'.format(name), '')
         output = self.template.format(
             policy_url=self.signing_url,
-            input=super(S3FileInput, self).render(name, value, attrs=None)
+            input=parent_input,
+            name=name,
         )
         return mark_safe(output)
 
