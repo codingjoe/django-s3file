@@ -11,8 +11,6 @@ from django.forms.widgets import (
 )
 from django.utils.safestring import mark_safe
 
-from six.moves.urllib.parse import unquote_plus
-
 from .conf import settings
 
 logger = logging.getLogger('s3file')
@@ -62,11 +60,10 @@ class S3FileInput(ClearableFileInput):
             return False
         if not filename:
             return None
-        relative_filename = unquote_plus(filename[len(default_storage.url('')):])
         try:
-            upload = default_storage.open(relative_filename)
+            upload = default_storage.open(filename)
         except IOError:
-            logger.exception('File "%s" could not be found.', relative_filename)
+            logger.exception('File "%s" could not be found.', filename)
             return False
         else:
             return upload

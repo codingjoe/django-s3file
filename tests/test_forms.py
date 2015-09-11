@@ -13,7 +13,7 @@ class TestS3FileInput(object):
         with open(upload_file) as f:
             uploaded_file = default_storage.save('test.jpg', f)
         response = client.post(reverse('upload'), {
-            'file': default_storage.url(uploaded_file)
+            'file': uploaded_file
         })
 
         assert response.status_code == 302
@@ -24,7 +24,7 @@ class TestS3FileInput(object):
         assert not form.is_valid()
 
     def test_same_url(self, filemodel):
-        form = UploadForm(data={'file': filemodel.file.url}, instance=filemodel)
+        form = UploadForm(data={'file': filemodel.file.name}, instance=filemodel)
         assert form.is_valid()
         assert form.has_changed()
 
