@@ -23,7 +23,6 @@ logger = logging.getLogger('s3file')
 
 
 class S3FileViewMixin(object):
-
     """
     Mixin to handle file upload signing for S3 buckets.
 
@@ -109,7 +108,6 @@ class S3FileViewMixin(object):
 
 
 class S3FileView(S3FileViewMixin, View):
-
     """View to sign upload requests to an S3 bucket."""
 
     def post(self, request, *args, **kwargs):

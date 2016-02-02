@@ -17,7 +17,6 @@ logger = logging.getLogger('s3file')
 
 
 class S3FileInput(ClearableFileInput):
-
     """FileInput that uses JavaScript to directly upload to Amazon S3."""
 
     needs_multipart_form = False

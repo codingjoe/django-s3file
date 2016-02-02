@@ -34,9 +34,12 @@ ROOT_URLCONF = 'tests.testapp.urls'
 MEDIA_URL = '/s3/'
 SITE_ID = 1
 
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, "templates"),
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+    },
+]
 
 USE_L10N = True
 
