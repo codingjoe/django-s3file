@@ -19,5 +19,5 @@ pytest-django==3.0.0
 pytest==3.0.4
 selenium==3.0.1
 six==1.10.0               # via django-appconf
-tox==2.4.1
+tox==2.5.0
 virtualenv==15.1.0        # via tox
