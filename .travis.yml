@@ -1,32 +1,50 @@
 language: python
 sudo: false
+dist: trusty
+addons:
+ firefox: latest
+ apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
 cache:
   - pip
+  - apt
 python:
   - "2.7"
-  - "3.4"
   - "3.5"
+  - "3.6"
 env:
   global:
     - DISPLAY=:99.0
   matrix:
-    - DJANGO="Django<1.9,>=1.8"
-    - DJANGO="Django<1.10,>=1.9"
-    - DJANGO="-e git+https://github.com/django/django.git@master#egg=Django"
+    - TOXENV=qa
+    - DJANGO=18
+    - DJANGO=19
+    - DJANGO=110
+    - DJANGO=master
 matrix:
   fast_finish: true
   allow_failures:
-    - env: DJANGO="-e git+https://github.com/django/django.git@master#egg=Django"
+    - env: DJANGO=master
 install:
-  - pip install --upgrade pip
-  - pip install -r requirements-dev.txt
-  - pip install $DJANGO
+  - pip install --upgrade pip tox
   - pip install -U coveralls
   - sh -e /etc/init.d/xvfb start
+before_script:
+  - mkdir bin
+  - curl -O https://chromedriver.storage.googleapis.com/2.27/chromedriver_linux64.zip
+  - unzip chromedriver_linux64.zip -d bin
+  - curl -Lo geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz
+  - tar xzf geckodriver.tar.gz -C bin
+  - PATH=$PATH:$PWD/bin
 script:
-  - isort --check-only --recursive --diff .
-  - flake8 --jobs=2 .
-  - pep257 s3file
-  - coverage run --source=s3file -m 'pytest'
+  - |
+    if [[ $TOXENV == qa ]]; then
+      tox -e qa
+    else
+      tox -e py$(echo $TRAVIS_PYTHON_VERSION | sed -e 's/\.//g')-dj$DJANGO
+    fi
 after_success:
   - coveralls
