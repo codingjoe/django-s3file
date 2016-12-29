@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import logging
 
-import django
 from django.core.files.storage import default_storage
 from django.core.urlresolvers import reverse_lazy
 from django.forms.widgets import (
