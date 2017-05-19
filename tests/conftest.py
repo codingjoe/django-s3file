@@ -2,7 +2,6 @@
 from __future__ import absolute_import, unicode_literals
 
 import os
-import signal
 import tempfile
 from time import sleep
 
@@ -14,7 +13,8 @@ from selenium.common.exceptions import WebDriverException
 
 
 browsers = {
-    'phantomjs': webdriver.PhantomJS,
+    'chrome': webdriver.Chrome,
+    'firefox': webdriver.Firefox,
 }
 
 
@@ -31,7 +31,9 @@ def driver(request):
         b.set_window_size(1200, 800)
         b.implicitly_wait(0.1)
         yield b
-        driver.service.process.send_signal(signal.SIGTERM)
+        if isinstance(b, webdriver.Chrome):
+            # chrome needs a couple of seconds before it can be quit
+            sleep(5)
         b.quit()
 
 
