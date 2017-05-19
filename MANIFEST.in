@@ -1,2 +1,5 @@
 include README.md
 recursive-include s3file *
+
+[bdist_wheel]
+universal=1

@@ -29,6 +29,7 @@ def driver(request):
         pytest.skip(force_text(e))
     else:
         b.set_window_size(1200, 800)
+        b.implicitly_wait(0.1)
         yield b
         if isinstance(b, webdriver.Chrome):
             # chrome needs a couple of seconds before it can be quit
