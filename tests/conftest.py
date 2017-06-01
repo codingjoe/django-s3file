@@ -11,7 +11,6 @@ from django.utils.encoding import force_text
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
-
 browsers = {
     'chrome': webdriver.Chrome,
     'firefox': webdriver.Firefox,
