@@ -19,7 +19,6 @@ python:
 - '3.6'
 env:
   global:
-  - DISPLAY=:99.0
   - GECKO_DRIVER_VERSION=v0.16.1
   - CHROME_DRIVER_VERSION=2.29
   matrix:
@@ -42,12 +41,10 @@ matrix:
 install:
 - pip install --upgrade pip tox
 - pip install -U coveralls
-- sh -e /etc/init.d/xvfb start
 before_script:
 - mkdir bin
 - curl -O https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
 - unzip chromedriver_linux64.zip -d bin
-- curl -Lo - "https://github.com/mozilla/geckodriver/releases/download/${GECKO_DRIVER_VERSION}/geckodriver-${GECKO_DRIVER_VERSION}-linux64.tar.gz" | tar xzf - -C bin
 - PATH=$PATH:$PWD/bin
 - |
   if [[ -z $TOXENV ]]; then
