@@ -3,7 +3,6 @@ from __future__ import absolute_import, unicode_literals
 
 import os
 import tempfile
-from time import sleep
 
 import pytest
 from django.core.files.base import ContentFile
@@ -17,22 +16,17 @@ browsers = {
 }
 
 
-@pytest.yield_fixture(scope='session', params=sorted(browsers.keys()))
-def driver(request):
-    if 'DISPLAY' not in os.environ:
-        pytest.skip('Test requires display server (export DISPLAY)')
-
+@pytest.yield_fixture(scope='session')
+def driver():
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('headless')
+    chrome_options.add_argument('window-size=1200x800')
     try:
-        b = browsers[request.param]()
+        b = webdriver.Chrome(chrome_options=chrome_options)
     except WebDriverException as e:
         pytest.skip(force_text(e))
     else:
-        b.set_window_size(1200, 800)
-        b.implicitly_wait(0.1)
         yield b
-        if isinstance(b, webdriver.Chrome):
-            # chrome needs a couple of seconds before it can be quit
-            sleep(5)
         b.quit()
 
 
