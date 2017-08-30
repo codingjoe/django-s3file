@@ -24,6 +24,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    's3file.middleware.S3FileMiddleware',
 )
 
 
@@ -44,6 +45,5 @@ TEMPLATES = [
 USE_L10N = True
 
 AWS_ACCESS_KEY_ID = 'testaccessid'
-AWS_S3_CUSTOM_DOMAIN = 'localhost:8081'
 AWS_SECRET_ACCESS_KEY = 'supersecretkey'
 AWS_STORAGE_BUCKET_NAME = 'test-bucket'

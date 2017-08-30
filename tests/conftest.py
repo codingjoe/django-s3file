@@ -1,6 +1,3 @@
-# -*- coding:utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 import os
 import tempfile
 
@@ -9,11 +6,6 @@ from django.core.files.base import ContentFile
 from django.utils.encoding import force_text
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
-
-browsers = {
-    'chrome': webdriver.Chrome,
-    'firefox': webdriver.Firefox,
-}
 
 
 @pytest.yield_fixture(scope='session')
@@ -31,16 +23,18 @@ def driver():
 
 
 @pytest.fixture
-def upload_file():
+def upload_file(request):
     path = tempfile.mkdtemp()
-    file_name = os.path.join(path, 'test.txt')
+    file_name = os.path.join(path, '%s.txt' % request.node.name)
     with open(file_name, 'w') as f:
-        f.write('Hello World!')
+        f.write(request.node.name)
     return file_name
 
 
 @pytest.fixture
-def filemodel(db):
+def filemodel(request, db):
     from tests.testapp.models import FileModel
 
-    return FileModel.objects.create(file=ContentFile('foobar', 'test.txt'))
+    return FileModel.objects.create(
+        file=ContentFile(request.node.name, '%s.txt' % request.node.name)
+    )
