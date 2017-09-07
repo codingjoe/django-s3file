@@ -2,7 +2,6 @@
 
 (() => {
   function parseURL (text) {
-    console.log(text)
     const xml = new window.DOMParser().parseFromString(text, 'text/xml')
     const tag = xml.getElementsByTagName('Key')[0]
     return decodeURI(tag.childNodes[0].nodeValue)

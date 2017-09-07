@@ -27,7 +27,7 @@ class S3FileInput(ClearableFileInput):
         self.access_key = settings.AWS_ACCESS_KEY_ID
         self.secret_access_key = settings.AWS_SECRET_ACCESS_KEY
         self.bucket_name = settings.AWS_STORAGE_BUCKET_NAME
-        self.upload_path = getattr(settings, 'S3FILE_UPLOAD_PATH', os.path.join('tmp', 's3fine'))
+        self.upload_path = getattr(settings, 'S3FILE_UPLOAD_PATH', os.path.join('tmp', 's3file'))
         super(S3FileInput, self).__init__(attrs=attrs)
         try:
             self.mime_type = self.attrs['accept']
