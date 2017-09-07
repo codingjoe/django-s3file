@@ -14,8 +14,8 @@ _less than 200 lines and no dependencies_
 *   lightweight: less 200 lines
 *   no JavaScript or Python dependencies (no jQuery)
 *   Python 3 and 2 support
-*   Auto swapping based on your environment
-*   works just like the buildin
+*   auto enabled based on your environment
+*   works just like the build-in
 
 ## Installation
 
@@ -35,7 +35,7 @@ INSTALLED_APPS = (
     '...',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     '...',
     's3file.middleware.S3FileMiddleware',
     '...',
@@ -46,6 +46,10 @@ MIDDLEWARE_CLASSES = (
 
 By default S3File will replace Django's `FileField` widget,
 but you can also specify the widget manually and pass custom attributes.
+
+The `FileField`'s widget is only than automatically replaced when the
+`AWS_SECRET_ACCESS_KEY` setting is set. This setting is required
+by `django-storages` to setup the Boto3 storage.
 
 ### Simple integrations
 
@@ -80,7 +84,7 @@ S3File uploads to a single folder. Files are later moved by Django when
 they are saved to the `upload_to` location.
 
 It is recommended to [setup expiration][aws-s3-lifecycle-rules] for that folder, to ensure that
-old and unused don't add up and produce costs.
+old and unused file uploads don't add up and produce costs.
 
 [aws-s3-lifecycle-rules]: http://docs.aws.amazon.com/AmazonS3/latest/dev/intro-lifecycle-rules.html
 
@@ -108,8 +112,8 @@ Just add the following to your CORS policy.
 
 Django does have limited [support to uploaded multiple files][uploading-multiple-files].
 S3File fully supports this feature. The custom middleware makes ensure that files
-are accessible via `request.FILES`, even tho they have been uploaded to AWS S3 directly
-and not to you Django application server.
+are accessible via `request.FILES`, even thogh they have been uploaded to AWS S3 directly
+and not to your Django application server.
 
 [uploading-multiple-files]: https://docs.djangoproject.com/en/1.11/topics/http/file-uploads/#uploading-multiple-files
 
@@ -122,7 +126,7 @@ You can further limit user data using the [`accept`][att_input_accept]-attribute
 The specified MIME-Type will be enforced in the AWS S3 policy as well, for enhanced
 server side protection.
 
-S3File uses a strict policy and signature to grand clients permission to upload
+S3File uses a strict policy and signature to grant clients permission to upload
 files to AWS S3. This signature expires based on Django's
 [`SESSION_COOKIE_AGE`][setting-SESSION_COOKIE_AGE] setting.
 
