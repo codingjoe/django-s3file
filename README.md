@@ -2,8 +2,6 @@
 
 A lightweight file upload input for Django and Amazon S3.
 
-_less than 200 lines and no dependencies_
-
 [![PyPi Version](https://img.shields.io/pypi/v/django-s3file.svg)](https://pypi.python.org/pypi/django-s3file/)
 [![Build Status](https://travis-ci.org/codingjoe/django-s3file.svg?branch=master)](https://travis-ci.org/codingjoe/django-s3file)
 [![Test Coverage](https://coveralls.io/repos/codingjoe/django-s3file/badge.svg?branch=master)](https://coveralls.io/r/codingjoe/django-s3file)
@@ -48,8 +46,7 @@ By default S3File will replace Django's `FileField` widget,
 but you can also specify the widget manually and pass custom attributes.
 
 The `FileField`'s widget is only than automatically replaced when the
-`AWS_SECRET_ACCESS_KEY` setting is set. This setting is required
-by `django-storages` to setup the Boto3 storage.
+`DEFAULT_FILE_STORAGE` setting is set to `django-storages`' `S3Boto3Storage`.
 
 ### Simple integrations
 

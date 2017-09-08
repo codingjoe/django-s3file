@@ -6,8 +6,9 @@ from django.views import generic
 class S3MockView(generic.View):
 
     def post(self, request):
-        key = request.POST.get('key')
         file = request.FILES.get('file', None)
+        key = request.POST.get('key')
+        key = key.replace('${filename}', file.name)
         default_storage.save(key, file)
         return response.HttpResponse(
             '<?xml version="1.0" encoding="UTF-8"?>'

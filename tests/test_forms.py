@@ -1,6 +1,3 @@
-import base64
-import datetime
-import json
 from contextlib import contextmanager
 
 import pytest
@@ -10,7 +7,7 @@ from selenium.webdriver.support.expected_conditions import staleness_of
 from selenium.webdriver.support.wait import WebDriverWait
 
 from s3file.forms import S3FileInput
-from tests.testapp.forms import ClearableUploadForm, UploadForm
+from tests.testapp.forms import UploadForm
 
 try:
     from django.urls import reverse
@@ -36,20 +33,7 @@ class TestS3FileInput(object):
     @pytest.fixture
     def freeze(self, monkeypatch):
         """Freeze datetime and UUID."""
-        monkeypatch.setattr('s3file.forms.S3FileInput.get_expiration_date',
-                            lambda _: '1988-11-19T10:10:00.000Z')
         monkeypatch.setattr('s3file.forms.S3FileInput.upload_folder', 'tmp')
-
-    def test_get_expiration_date(self, settings):
-        DATE_FORMAT = '%Y-%m-%dT%H:%M:%S.000Z'
-        assert S3FileInput().get_expiration_date()[-1] == 'Z', 'is UTC date'
-        date_1 = datetime.datetime.strptime(S3FileInput().get_expiration_date(), DATE_FORMAT)
-        settings.SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 1
-        date_2 = datetime.datetime.strptime(S3FileInput().get_expiration_date(), DATE_FORMAT)
-        assert date_2 < date_1, S3FileInput().get_expiration_date()
-
-    def test_get_expiration_date_freeze(self, freeze):
-        assert S3FileInput().get_expiration_date() == '1988-11-19T10:10:00.000Z'
 
     def test_value_from_datadict(self, client, upload_file):
         with open(upload_file) as f:
@@ -83,40 +67,23 @@ class TestS3FileInput(object):
         assert form.cleaned_data['file'] == filemodel.file
 
     def test_clear(self, filemodel):
-        form = ClearableUploadForm(data={'file-clear': '1'}, instance=filemodel)
+        form = UploadForm(data={'file-clear': '1'}, instance=filemodel)
         assert form.is_valid()
         assert not form.cleaned_data['file']
 
     def test_build_attr(self):
         assert set(S3FileInput().build_attrs({}).keys()) == {
             'class',
-            'data-AWSAccessKeyId',
-            'data-s3-url',
-            'data-key',
-            'data-policy',
-            'data-signature',
+            'data-url',
+            'data-fields-x-amz-algorithm',
+            'data-fields-x-amz-date',
+            'data-fields-x-amz-signature',
+            'data-fields-x-amz-credential',
+            'data-fields-policy',
+            'data-fields-key',
         }
         assert S3FileInput().build_attrs({})['class'] == 's3file'
         assert S3FileInput().build_attrs({'class': 'my-class'})['class'] == 'my-class s3file'
-
-    def test_get_policy(self, freeze):
-        base64_policy = S3FileInput().get_policy()
-        policy = json.loads(base64.b64decode(base64_policy).decode('utf-8'))
-        assert policy == {
-            'expiration': '1988-11-19T10:10:00.000Z',
-            'conditions': [
-                {'bucket': 'test-bucket'},
-                ['starts-with', '$key', 'tmp'],
-                {'success_action_status': '201'},
-                ['starts-with', '$Content-Type', ''],
-            ],
-        }
-
-    def test_get_signature(self, freeze):
-        assert S3FileInput().get_signature() in [
-            'jdvyRM/sS2frI9oSe6vIXGFswqg=',
-            'D3W1aKcI1VkzcFHrvSQbGdqnmPo=',
-        ]
 
     def test_get_conditions(self, freeze):
         conditions = S3FileInput().get_conditions()
@@ -125,7 +92,7 @@ class TestS3FileInput(object):
             {"success_action_status": "201"},
             ['starts-with', '$key', 'tmp'],
             ["starts-with", "$Content-Type", ""]
-        ])
+        ]), conditions
 
     def test_accept(self):
         widget = S3FileInput()
@@ -153,8 +120,6 @@ class TestS3FileInput(object):
     def test_file_insert(self, request, driver, live_server, upload_file, freeze):
         driver.get(live_server + self.url)
         file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
-        driver.execute_script('arguments[0].setAttribute("data-s3-url", arguments[1])',
-                              file_input, live_server + reverse('s3mock'))
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
         with wait_for_page_load(driver, timeout=10):

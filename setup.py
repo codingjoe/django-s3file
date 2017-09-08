@@ -23,5 +23,7 @@ setup(
     ],
     packages=['s3file'],
     include_package_data=True,
-    install_requires=[],
+    install_requires=[
+        'django-storages',
+    ],
 )

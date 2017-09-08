@@ -35,19 +35,19 @@
   }
 
   function uploadFiles (e, fileInput, name) {
-    const url = fileInput.getAttribute('data-s3-url')
+    const url = fileInput.getAttribute('data-url')
     const form = e.target
-    const policy = fileInput.getAttribute('data-policy')
-    const signature = fileInput.getAttribute('data-signature')
-    const AWSAccessKeyId = fileInput.getAttribute('data-AWSAccessKeyId')
     const promises = Array.from(fileInput.files).map((file) => {
       const s3Form = new window.FormData()
-      s3Form.append('policy', policy)
-      s3Form.append('signature', signature)
-      s3Form.append('AWSAccessKeyId', AWSAccessKeyId)
+      Array.from(fileInput.attributes).forEach(attr => {
+        let name = attr.name
+        if (name.startsWith('data-fields')) {
+          name = name.replace('data-fields-', '')
+          s3Form.append(name, attr.value)
+        }
+      })
       s3Form.append('success_action_status', '201')
       s3Form.append('Content-Type', file.type)
-      s3Form.append('key', fileInput.getAttribute('data-key') + '/' + file.name)
       s3Form.append('file', file)
       return request('POST', url, s3Form)
     })
