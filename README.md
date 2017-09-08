@@ -17,6 +17,8 @@ A lightweight file upload input for Django and Amazon S3.
 
 ## Installation
 
+_Make sure you have [Amazon S3 storage][boto-storage] setup correctly._
+
 Just install S3file using `pip`.
 
 ```bash
@@ -39,6 +41,8 @@ MIDDLEWARE = (
     '...',
 )
 ```
+
+[boto-storage]: http://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
 
 ## Usage
 
