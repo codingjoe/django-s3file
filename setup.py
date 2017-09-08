@@ -3,8 +3,8 @@ from setuptools import setup
 
 setup(
     name='django-s3file',
-    version='1.2.1',
-    description='A lightweight Fine Uploader input for Django and Amazon S3',
+    version='2.0.0',
+    description='A lightweight file uploader input for Django and Amazon S3',
     author='codingjoe',
     url='https://github.com/codingjoe/django-s3file',
     author_email='info@johanneshoppe.com',
@@ -24,6 +24,6 @@ setup(
     packages=['s3file'],
     include_package_data=True,
     install_requires=[
-        'django-appconf>=0.6',
+        'django-storages',
     ],
 )

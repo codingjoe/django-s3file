@@ -1,72 +1,106 @@
 # django-s3file
 
-
 A lightweight file upload input for Django and Amazon S3.
 
 [![PyPi Version](https://img.shields.io/pypi/v/django-s3file.svg)](https://pypi.python.org/pypi/django-s3file/)
 [![Build Status](https://travis-ci.org/codingjoe/django-s3file.svg?branch=master)](https://travis-ci.org/codingjoe/django-s3file)
-[![Code Health](https://landscape.io/github/codingjoe/django-s3file/master/landscape.svg?style=flat)](https://landscape.io/github/codingjoe/django-s3file/master)
 [![Test Coverage](https://coveralls.io/repos/codingjoe/django-s3file/badge.svg?branch=master)](https://coveralls.io/r/codingjoe/django-s3file)
-[![Code health](https://scrutinizer-ci.com/g/codingjoe/django-s3file/badges/quality-score.svg?b=master)](https://scrutinizer-ci.com/g/codingjoe/django-s3file/?branch=master)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/codingjoe/django-s3file/master/LICENSE)
-[![Join the chat at https://gitter.im/codingjoe/django-s3file](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/codingjoe/django-s3file?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 
 ## Features
 
- - Pure JavaScript (no jQuery)
- - Python 2 and 3 support
- - Auto swapping based on your environment
- - Pluggable as it returns a simple django file, just like native input
- - Easily extensible (authentication, styles)
-
+*   lightweight: less 200 lines
+*   no JavaScript or Python dependencies (no jQuery)
+*   Python 3 and 2 support
+*   auto enabled based on your environment
+*   works just like the build-in
 
 ## Installation
 
-Just install S3file using `pip` or `easy_install`.
+_Make sure you have [Amazon S3 storage][boto-storage] setup correctly._
+
+Just install S3file using `pip`.
+
 ```bash
 pip install django-s3file
 ```
-Don't forget to add `s3file` to the `INSTALLED_APPS`.
 
+Add the S3File app and middleware in your settings:
 
-## Usage
-
-### Simple integrations
-
-Include s3file's URLs in your URL root.
-
-**urls.py**
 ```python
-urlpatterns = patterns(
-    ...
-    url(r'^s3file/', include('s3file.urls')),
+
+INSTALLED_APPS = (
+    '...',
+    's3file',
+    '...',
+)
+
+MIDDLEWARE = (
+    '...',
+    's3file.middleware.S3FileMiddleware',
+    '...',
 )
 ```
 
+[boto-storage]: http://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
+
+## Usage
+
+By default S3File will replace Django's `FileField` widget,
+but you can also specify the widget manually and pass custom attributes.
+
+The `FileField`'s widget is only than automatically replaced when the
+`DEFAULT_FILE_STORAGE` setting is set to `django-storages`' `S3Boto3Storage`.
+
+### Simple integrations
+
 **forms.py**
+
 ```python
-from s3file.forms import AutoFileInput
+from django import forms
+from django.db import models
+from s3file.forms import S3FileInput
+
+
+class ImageModel(models.Model):
+    file = models.FileField(upload_to='path/to/files')
+
 
 class MyModelForm(forms.ModelForm):
-
     class Meta:
-        model = MyModel
-        fields = ('my_file_field')
+        model = ImageModel
+        fields = ('file',)
         widgets = {
-            'my_file_field': AutoFileInput
+            'file': S3FileInput(attrs={'accept': 'image/*'})
         }
 ```
 **Done!** No really, that's all that needs to be done.
 
 
-### Setting up the CORS policy on your AWS S3 Bucket
+### Setting up the AWS S3 bucket
+
+### Upload folder
+
+S3File uploads to a single folder. Files are later moved by Django when
+they are saved to the `upload_to` location.
+
+It is recommended to [setup expiration][aws-s3-lifecycle-rules] for that folder, to ensure that
+old and unused file uploads don't add up and produce costs.
+
+[aws-s3-lifecycle-rules]: http://docs.aws.amazon.com/AmazonS3/latest/dev/intro-lifecycle-rules.html
+
+The default folder name is: `tmp/s3file`
+You can change it by changing the `S3FILE_UPLOAD_PATH` setting.
+
+### CORS policy
+
+You will need to allow `POST` from all origins.
+Just add the following to your CORS policy. 
 
 ```xml
 <CORSConfiguration>
     <CORSRule>
         <AllowedOrigin>*</AllowedOrigin>
-        <AllowedMethod>PUT</AllowedMethod>
         <AllowedMethod>POST</AllowedMethod>
         <AllowedMethod>GET</AllowedMethod>
         <MaxAgeSeconds>3000</MaxAgeSeconds>
@@ -75,32 +109,30 @@ class MyModelForm(forms.ModelForm):
 </CORSConfiguration>
 ```
 
+### Uploading multiple files
 
-### Advanced usage examples
+Django does have limited [support to uploaded multiple files][uploading-multiple-files].
+S3File fully supports this feature. The custom middleware makes ensure that files
+are accessible via `request.FILES`, even thogh they have been uploaded to AWS S3 directly
+and not to your Django application server.
 
-#### Authentication
-The signing endpoint supports CSRF by default but does not require a authenticated user.
-This and other behavior can be easily added by inheriting from the view.
+[uploading-multiple-files]: https://docs.djangoproject.com/en/1.11/topics/http/file-uploads/#uploading-multiple-files
 
-**views.py**
-```python
-from s3file.views import S3FileView
-from braces.views import LoginRequiredMixin
+### Security and Authentication
 
-class MyS3FileView(LoginRequiredMixin, S3FileView):
-    pass
-```
+django-s3file does not require any authentication setup. Files can only be uploaded
+to AWS S3 by users who have access to the form where the file upload is requested.
 
-Now don't forget to change the URLs.
+You can further limit user data using the [`accept`][att_input_accept]-attribute.
+The specified MIME-Type will be enforced in the AWS S3 policy as well, for enhanced
+server side protection.
 
-**urls.py**
-```python
-urlpatterns = patterns(
-    ...
-    url('^s3file/sign',
-        MyS3FileView.as_view(), name='s3file-sign'),
-)
-```
+S3File uses a strict policy and signature to grant clients permission to upload
+files to AWS S3. This signature expires based on Django's
+[`SESSION_COOKIE_AGE`][setting-SESSION_COOKIE_AGE] setting.
+
+[setting-SESSION_COOKIE_AGE]: https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SESSION_COOKIE_AGE
+[att_input_accept]: https://www.w3schools.com/tags/att_input_accept.asp
 
 ## License
 
