@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='django-s3file',
-    version='2.0.0',
+    version='2.1.0',
     description='A lightweight file uploader input for Django and Amazon S3',
     author='codingjoe',
     url='https://github.com/codingjoe/django-s3file',

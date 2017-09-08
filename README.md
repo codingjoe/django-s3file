@@ -46,36 +46,11 @@ MIDDLEWARE = (
 
 ## Usage
 
-By default S3File will replace Django's `FileField` widget,
-but you can also specify the widget manually and pass custom attributes.
+S3File automatically replaces Django's `ClearableFileInput` widget,
+you do not need to alter your code at all.
 
-The `FileField`'s widget is only than automatically replaced when the
+The `ClearableFileInput` widget is only than automatically replaced when the
 `DEFAULT_FILE_STORAGE` setting is set to `django-storages`' `S3Boto3Storage`.
-
-### Simple integrations
-
-**forms.py**
-
-```python
-from django import forms
-from django.db import models
-from s3file.forms import S3FileInput
-
-
-class ImageModel(models.Model):
-    file = models.FileField(upload_to='path/to/files')
-
-
-class MyModelForm(forms.ModelForm):
-    class Meta:
-        model = ImageModel
-        fields = ('file',)
-        widgets = {
-            'file': S3FileInput(attrs={'accept': 'image/*'})
-        }
-```
-**Done!** No really, that's all that needs to be done.
-
 
 ### Setting up the AWS S3 bucket
 
