@@ -4,8 +4,6 @@ dist: trusty
 cache:
 - apt
 - pip
-services:
-- redis
 addons:
   firefox: latest
   apt:
@@ -14,13 +12,11 @@ addons:
     packages:
     - google-chrome-stable
 python:
-- '2.7'
 - '3.5'
 - '3.6'
 env:
   global:
-  - GECKO_DRIVER_VERSION=v0.16.1
-  - CHROME_DRIVER_VERSION=2.29
+  - CHROME_DRIVER_VERSION=2.32
   matrix:
   - DJANGO=18
   - DJANGO=110

@@ -2,6 +2,7 @@ from contextlib import contextmanager
 
 import pytest
 from django.core.files.storage import default_storage
+from django.forms import ClearableFileInput
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.expected_conditions import staleness_of
 from selenium.webdriver.support.wait import WebDriverWait
@@ -25,10 +26,15 @@ def wait_for_page_load(driver, timeout=30):
     )
 
 
-class TestS3FileInput(object):
+class TestS3FileInput:
     @property
     def url(self):
         return reverse('upload')
+
+    @pytest.fixture(autouse=True)
+    def patch(self):
+        ClearableFileInput.__new__ = \
+            lambda cls, *args, **kwargs: object.__new__(S3FileInput)
 
     @pytest.fixture
     def freeze(self, monkeypatch):
@@ -86,7 +92,7 @@ class TestS3FileInput(object):
         assert S3FileInput().build_attrs({'class': 'my-class'})['class'] == 'my-class s3file'
 
     def test_get_conditions(self, freeze):
-        conditions = S3FileInput().get_conditions()
+        conditions = S3FileInput().get_conditions(None)
         assert all(condition in conditions for condition in [
             {"bucket": 'test-bucket'},
             {"success_action_status": "201"},
@@ -96,19 +102,16 @@ class TestS3FileInput(object):
 
     def test_accept(self):
         widget = S3FileInput()
-        assert widget.mime_type is None
         assert 'accept' not in widget.render(name='file', value='test.jpg')
-        assert ["starts-with", "$Content-Type", ""] in widget.get_conditions()
+        assert ["starts-with", "$Content-Type", ""] in widget.get_conditions(None)
 
         widget = S3FileInput(attrs={'accept': 'image/*'})
-        assert widget.mime_type == 'image/*'
         assert 'accept="image/*"' in widget.render(name='file', value='test.jpg')
-        assert ["starts-with", "$Content-Type", "image/"] in widget.get_conditions()
+        assert ["starts-with", "$Content-Type", "image/"] in widget.get_conditions('image/*')
 
         widget = S3FileInput(attrs={'accept': 'image/jpeg'})
-        assert widget.mime_type == 'image/jpeg'
         assert 'accept="image/jpeg"' in widget.render(name='file', value='test.jpg')
-        assert {"Content-Type": 'image/jpeg'} in widget.get_conditions()
+        assert {"Content-Type": 'image/jpeg'} in widget.get_conditions('image/jpeg')
 
     def test_no_js_error(self, driver, live_server):
         driver.get(live_server + self.url)
@@ -129,3 +132,6 @@ class TestS3FileInput(object):
         with pytest.raises(NoSuchElementException):
             error = driver.find_element_by_xpath('//body[@JSError]')
             pytest.fail(error.get_attribute('JSError'))
+
+    def test_media(self):
+        assert ClearableFileInput().media._js == ['s3file/js/s3file.js']

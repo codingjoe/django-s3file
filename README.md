@@ -2,6 +2,10 @@
 
 A lightweight file upload input for Django and Amazon S3.
 
+Django-S3File allows you to upload files directly AWS S3 effectively
+bypassing your application server. This allows you to avoid long running
+requests from large file uploads.
+
 [![PyPi Version](https://img.shields.io/pypi/v/django-s3file.svg)](https://pypi.python.org/pypi/django-s3file/)
 [![Build Status](https://travis-ci.org/codingjoe/django-s3file.svg?branch=master)](https://travis-ci.org/codingjoe/django-s3file)
 [![Test Coverage](https://coveralls.io/repos/codingjoe/django-s3file/badge.svg?branch=master)](https://coveralls.io/r/codingjoe/django-s3file)
@@ -11,8 +15,7 @@ A lightweight file upload input for Django and Amazon S3.
 
 *   lightweight: less 200 lines
 *   no JavaScript or Python dependencies (no jQuery)
-*   Python 3 and 2 support
-*   auto enabled based on your environment
+*   easy integration
 *   works just like the build-in
 
 ## Installation
@@ -46,36 +49,11 @@ MIDDLEWARE = (
 
 ## Usage
 
-By default S3File will replace Django's `FileField` widget,
-but you can also specify the widget manually and pass custom attributes.
+S3File automatically replaces Django's `ClearableFileInput` widget,
+you do not need to alter your code at all.
 
-The `FileField`'s widget is only than automatically replaced when the
+The `ClearableFileInput` widget is only than automatically replaced when the
 `DEFAULT_FILE_STORAGE` setting is set to `django-storages`' `S3Boto3Storage`.
-
-### Simple integrations
-
-**forms.py**
-
-```python
-from django import forms
-from django.db import models
-from s3file.forms import S3FileInput
-
-
-class ImageModel(models.Model):
-    file = models.FileField(upload_to='path/to/files')
-
-
-class MyModelForm(forms.ModelForm):
-    class Meta:
-        model = ImageModel
-        fields = ('file',)
-        widgets = {
-            'file': S3FileInput(attrs={'accept': 'image/*'})
-        }
-```
-**Done!** No really, that's all that needs to be done.
-
 
 ### Setting up the AWS S3 bucket
 

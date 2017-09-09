@@ -21,7 +21,7 @@ INSTALLED_APPS = (
     'tests.testapp',
 )
 
-DEFAULT_FILE_STORAGE = 'tests.testapp.storages.DummyS3Boto3Storage'
+DEFAULT_FILE_STORAGE = 'tests.testapp.dummy_storage.DummyS3Boto3Storage'
 
 MIDDLEWARE = MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

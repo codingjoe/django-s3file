@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from s3file.middleware import S3FileMiddleware
 
 
-class TestS3FileMiddleware(object):
+class TestS3FileMiddleware:
 
     def test_get_files_from_storage(self):
         content = b'test_get_files_from_storage'
