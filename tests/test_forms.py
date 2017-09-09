@@ -26,14 +26,15 @@ def wait_for_page_load(driver, timeout=30):
     )
 
 
-class TestS3FileInput(object):
+class TestS3FileInput:
     @property
     def url(self):
         return reverse('upload')
 
     @pytest.fixture(autouse=True)
     def patch(self):
-        ClearableFileInput.__new__ = lambda cls, *args, **kwargs: object.__new__(S3FileInput)
+        ClearableFileInput.__new__ = \
+            lambda cls, *args, **kwargs: object.__new__(S3FileInput)
 
     @pytest.fixture
     def freeze(self, monkeypatch):

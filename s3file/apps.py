@@ -1,10 +1,4 @@
 from django.apps import AppConfig
-from django.core.files.storage import default_storage
-
-try:
-    from storages.backends.s3boto3 import S3Boto3Storage
-except ImportError:
-    from storages.backends.s3boto import S3BotoStorage as S3BotoStorage
 
 
 class S3FileConfig(AppConfig):
@@ -12,9 +6,11 @@ class S3FileConfig(AppConfig):
     verbose_name = 'S3File'
 
     def ready(self):
-        from django import forms
+        from django.core.files.storage import default_storage
+        from storages.backends.s3boto3 import S3Boto3Storage
 
         if isinstance(default_storage, S3Boto3Storage):
+            from django import forms
             from .forms import S3FileInput
 
             forms.ClearableFileInput.__new__ = \
