@@ -7,7 +7,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.expected_conditions import staleness_of
 from selenium.webdriver.support.wait import WebDriverWait
 
-from s3file.forms import S3FileInput
+from s3file.forms import S3FileInputMixin
 from tests.testapp.forms import UploadForm
 
 try:
@@ -33,13 +33,15 @@ class TestS3FileInput:
 
     @pytest.fixture(autouse=True)
     def patch(self):
-        ClearableFileInput.__new__ = \
-            lambda cls, *args, **kwargs: object.__new__(S3FileInput)
+        if S3FileInputMixin not in ClearableFileInput.__bases__:
+            ClearableFileInput.__bases__ = \
+                (S3FileInputMixin,) + ClearableFileInput.__bases__
+        pass
 
     @pytest.fixture
     def freeze(self, monkeypatch):
         """Freeze datetime and UUID."""
-        monkeypatch.setattr('s3file.forms.S3FileInput.upload_folder', 'tmp')
+        monkeypatch.setattr('s3file.forms.S3FileInputMixin.upload_folder', 'tmp')
 
     def test_value_from_datadict(self, client, upload_file):
         with open(upload_file) as f:
@@ -78,7 +80,7 @@ class TestS3FileInput:
         assert not form.cleaned_data['file']
 
     def test_build_attr(self):
-        assert set(S3FileInput().build_attrs({}).keys()) == {
+        assert set(ClearableFileInput().build_attrs({}).keys()) == {
             'class',
             'data-url',
             'data-fields-x-amz-algorithm',
@@ -88,11 +90,12 @@ class TestS3FileInput:
             'data-fields-policy',
             'data-fields-key',
         }
-        assert S3FileInput().build_attrs({})['class'] == 's3file'
-        assert S3FileInput().build_attrs({'class': 'my-class'})['class'] == 'my-class s3file'
+        assert ClearableFileInput().build_attrs({})['class'] == 's3file'
+        assert ClearableFileInput().build_attrs(
+            {'class': 'my-class'})['class'] == 'my-class s3file'
 
     def test_get_conditions(self, freeze):
-        conditions = S3FileInput().get_conditions(None)
+        conditions = ClearableFileInput().get_conditions(None)
         assert all(condition in conditions for condition in [
             {"bucket": 'test-bucket'},
             {"success_action_status": "201"},
@@ -101,15 +104,15 @@ class TestS3FileInput:
         ]), conditions
 
     def test_accept(self):
-        widget = S3FileInput()
+        widget = ClearableFileInput()
         assert 'accept' not in widget.render(name='file', value='test.jpg')
         assert ["starts-with", "$Content-Type", ""] in widget.get_conditions(None)
 
-        widget = S3FileInput(attrs={'accept': 'image/*'})
+        widget = ClearableFileInput(attrs={'accept': 'image/*'})
         assert 'accept="image/*"' in widget.render(name='file', value='test.jpg')
         assert ["starts-with", "$Content-Type", "image/"] in widget.get_conditions('image/*')
 
-        widget = S3FileInput(attrs={'accept': 'image/jpeg'})
+        widget = ClearableFileInput(attrs={'accept': 'image/jpeg'})
         assert 'accept="image/jpeg"' in widget.render(name='file', value='test.jpg')
         assert {"Content-Type": 'image/jpeg'} in widget.get_conditions('image/jpeg')
 

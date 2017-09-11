@@ -11,7 +11,8 @@ class S3FileConfig(AppConfig):
 
         if isinstance(default_storage, S3Boto3Storage):
             from django import forms
-            from .forms import S3FileInput
+            from .forms import S3FileInputMixin
 
-            forms.ClearableFileInput.__new__ = \
-                lambda cls, *args, **kwargs: object.__new__(S3FileInput)
+            if S3FileInputMixin not in forms.ClearableFileInput.__bases__:
+                forms.ClearableFileInput.__bases__ = \
+                    (S3FileInputMixin,) + forms.ClearableFileInput.__bases__
