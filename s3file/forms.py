@@ -10,7 +10,7 @@ from django.utils.functional import cached_property
 logger = logging.getLogger('s3file')
 
 
-class S3FileInput(ClearableFileInput):
+class S3FileInputMixin:
     """FileInput that uses JavaScript to directly upload to Amazon S3."""
 
     needs_multipart_form = False
@@ -26,7 +26,7 @@ class S3FileInput(ClearableFileInput):
         return default_storage.connection.meta.client
 
     def build_attrs(self, *args, **kwargs):
-        attrs = super(S3FileInput, self).build_attrs(*args, **kwargs)
+        attrs = super().build_attrs(*args, **kwargs)
 
         mime_type = attrs.get('accept', None)
         response = self.client.generate_presigned_post(
@@ -75,5 +75,4 @@ class S3FileInput(ClearableFileInput):
     class Media:
         js = (
             's3file/js/s3file.js',
-
         )
