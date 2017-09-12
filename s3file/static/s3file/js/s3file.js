@@ -16,6 +16,16 @@
     form.appendChild(input)
   }
 
+  function waitForAllFiles(form) {
+    if (window.uploading !== 0) {
+      setTimeout(() => {
+        waitForAllFiles(form)
+      }, 100)
+    } else {
+      form.submit()
+    }
+  }
+
   function request (method, url, data) {
     return new Promise((resolve, reject) => {
       const xhr = new window.XMLHttpRequest()
@@ -34,9 +44,8 @@
     })
   }
 
-  function uploadFiles (e, fileInput, name) {
+  function uploadFiles (form, fileInput, name) {
     const url = fileInput.getAttribute('data-url')
-    const form = e.target
     const promises = Array.from(fileInput.files).map((file) => {
       const s3Form = new window.FormData()
       Array.from(fileInput.attributes).forEach(attr => {
@@ -60,32 +69,35 @@
       input.type = 'hidden'
       input.name = 's3file'
       input.value = fileInput.name
-      form.appendChild(input)
       fileInput.name = ''
-      form.submit()
+      form.appendChild(input)
+      window.uploading -= 1
     }, (err) => {
       console.log(err)
       fileInput.setCustomValidity(err)
       fileInput.reportValidity()
     })
-  }
 
-  function addHandlers (fileInput) {
-    const form = fileInput.closest('form')
-    form.addEventListener('submit', (e) => {
-      uploadFiles(e, fileInput, fileInput.name)
-      e.preventDefault()
-    }, false)
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    [].forEach.call(document.querySelectorAll('.s3file'), addHandlers)
+    let forms = Array.from(document.querySelectorAll('.s3file')).map(input => {
+      return input.closest('form')
+    })
+    forms = new Set(forms)
+    forms.forEach(form => {
+      form.onsubmit = (e) => {
+        e.preventDefault()
+        window.uploading = 0
+        const inputs = document.querySelectorAll('.s3file')
+        Array.from(inputs).forEach(input => {
+            window.uploading += 1
+            uploadFiles(form, input, input.name)
+          }
+        )
+        waitForAllFiles(form)
+      }
+    })
   })
 
-  document.addEventListener('DOMNodeInserted', (e) => {
-    if (e.target.tagName) {
-      const el = e.target.querySelector('.s3file')
-      if (el) addHandlers(el)
-    }
-  })
 })()
