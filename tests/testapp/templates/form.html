@@ -13,7 +13,7 @@
 <form method="post">
     {% csrf_token %}
     {{ form }}
-    <input type="submit" value="Submit Form"/>
+    <input type="submit" name="submit" value="Submit Form"/>
 </form>
 {{ form.media.js }}
 </body>

@@ -22,7 +22,7 @@
         waitForAllFiles(form)
       }, 100)
     } else {
-      form.submit()
+      HTMLFormElement.prototype.submit.call(form)
     }
   }
 
