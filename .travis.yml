@@ -36,7 +36,7 @@ matrix:
     python: '3.5'
 install:
 - pip install --upgrade pip tox
-- pip install -U coveralls
+- pip install -U codecov
 before_script:
 - mkdir bin
 - curl -O https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
@@ -50,7 +50,7 @@ before_script:
 script:
 - tox -e $TOXENV
 after_success:
-- coveralls
+- codecov
 deploy:
   provider: pypi
   user: codingjoe
