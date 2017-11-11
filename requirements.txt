@@ -1,2 +1,2 @@
-django-storages
+django-storages==1.6.5
 boto3
