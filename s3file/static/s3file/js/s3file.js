@@ -16,13 +16,13 @@
     form.appendChild(input)
   }
 
-  function waitForAllFiles(form) {
+  function waitForAllFiles (form) {
     if (window.uploading !== 0) {
       setTimeout(() => {
         waitForAllFiles(form)
       }, 100)
     } else {
-      HTMLFormElement.prototype.submit.call(form)
+      window.HTMLFormElement.prototype.submit.call(form)
     }
   }
 
@@ -77,7 +77,29 @@
       fileInput.setCustomValidity(err)
       fileInput.reportValidity()
     })
+  }
 
+  function clickSubmit (e) {
+    e.preventDefault()
+    let submitButton = e.target
+    let form = submitButton.closest('form')
+    const submitInput = document.createElement('input')
+    submitInput.type = 'hidden'
+    submitInput.value = true
+    submitInput.name = submitButton.name
+    form.appendChild(submitInput)
+    uploadS3Inputs(form)
+  }
+
+  function uploadS3Inputs (form) {
+    window.uploading = 0
+    const inputs = form.querySelectorAll('.s3file')
+    Array.from(inputs).forEach(input => {
+      window.uploading += 1
+      uploadFiles(form, input, input.name)
+    }
+      )
+    waitForAllFiles(form)
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -88,16 +110,13 @@
     forms.forEach(form => {
       form.onsubmit = (e) => {
         e.preventDefault()
-        window.uploading = 0
-        const inputs = document.querySelectorAll('.s3file')
-        Array.from(inputs).forEach(input => {
-            window.uploading += 1
-            uploadFiles(form, input, input.name)
-          }
-        )
-        waitForAllFiles(form)
+        uploadS3Inputs(e.target)
       }
+      let submitButtons = form.querySelectorAll('input[type=submit], button[type=submit]')
+      Array.from(submitButtons).forEach(submitButton => {
+        submitButton.onclick = clickSubmit
+      }
+      )
     })
   })
-
 })()
