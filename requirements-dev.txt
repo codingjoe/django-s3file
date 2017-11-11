@@ -3,4 +3,4 @@ coverage
 isort
 pytest-django
 pytest
-selenium
+selenium==3.7.0
