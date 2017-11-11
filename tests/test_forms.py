@@ -1,3 +1,4 @@
+import json
 from contextlib import contextmanager
 
 import pytest
@@ -51,7 +52,7 @@ class TestS3FileInput:
             's3file': 'file'
         })
 
-        assert response.status_code == 302
+        assert response.status_code == 201
 
     def test_value_from_datadict_initial_data(self, filemodel):
         form = UploadForm(instance=filemodel)
@@ -135,6 +136,25 @@ class TestS3FileInput:
         with pytest.raises(NoSuchElementException):
             error = driver.find_element_by_xpath('//body[@JSError]')
             pytest.fail(error.get_attribute('JSError'))
+
+    def test_file_insert_submit_value(self, driver, live_server, upload_file, freeze):
+        driver.get(live_server + self.url)
+        file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
+        file_input.send_keys(upload_file)
+        assert file_input.get_attribute('name') == 'file'
+        save_button = driver.find_element_by_xpath('//input[@name=\'save\']')
+        with wait_for_page_load(driver, timeout=10):
+            save_button.click()
+        assert 'save' in driver.page_source
+
+        driver.get(live_server + self.url)
+        file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
+        file_input.send_keys(upload_file)
+        assert file_input.get_attribute('name') == 'file'
+        save_button = driver.find_element_by_xpath('//button[@name=\'save_continue\']')
+        with wait_for_page_load(driver, timeout=10):
+            save_button.click()
+        assert 'save_continue' in driver.page_source
 
     def test_media(self):
         assert ClearableFileInput().media._js == ['s3file/js/s3file.js']
