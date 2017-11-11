@@ -2,5 +2,5 @@
 coverage
 isort
 pytest-django
-pytest
+pytest==3.2.3
 selenium
