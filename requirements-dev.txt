@@ -1,6 +1,6 @@
 -e .
 coverage
-isort
+isort==4.2.15
 pytest-django
 pytest
 selenium
