@@ -28,10 +28,10 @@ class S3FileInputMixin:
     def build_attrs(self, *args, **kwargs):
         attrs = super().build_attrs(*args, **kwargs)
 
-        mime_type = attrs.get('accept', None)
+        accept = attrs.get('accept')
         response = self.client.generate_presigned_post(
             self.bucket_name, os.path.join(self.upload_folder, '${filename}'),
-            Conditions=self.get_conditions(mime_type),
+            Conditions=self.get_conditions(accept),
             ExpiresIn=self.expires,
         )
 
@@ -48,18 +48,21 @@ class S3FileInputMixin:
             defaults['class'] = 's3file'
         return defaults
 
-    def get_conditions(self, mime_type):
+    def get_conditions(self, accept):
         conditions = [
             {"bucket": self.bucket_name},
             ["starts-with", "$key", self.upload_folder],
             {"success_action_status": "201"},
         ]
-        if mime_type:
-            top_type, sub_type = mime_type.split('/', 1)
-            if sub_type == '*':
-                conditions.append(["starts-with", "$Content-Type", "%s/" % top_type])
-            else:
-                conditions.append({"Content-Type": mime_type})
+        if accept:
+            accept = accept.replace(' ', '')  # remove whitespaces
+            mime_types = accept.split(',') if accept else []  # catch empty string
+            for mime_type in mime_types:
+                top_type, sub_type = mime_type.split('/', 1)
+                if sub_type == '*':
+                    conditions.append(["starts-with", "$Content-Type", "%s/" % top_type])
+                else:
+                    conditions.append({"Content-Type": mime_type})
         else:
             conditions.append(["starts-with", "$Content-Type", ""])
 
