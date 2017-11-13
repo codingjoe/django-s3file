@@ -155,6 +155,7 @@ class TestS3FileInput:
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
         assert 'save_continue' in driver.page_source
+        assert 'continue_value' in driver.page_source
 
     def test_media(self):
         assert ClearableFileInput().media._js == ['s3file/js/s3file.js']
