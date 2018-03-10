@@ -80,7 +80,6 @@
   }
 
   function clickSubmit (e) {
-    e.preventDefault()
     let submitButton = e.target
     let form = submitButton.closest('form')
     const submitInput = document.createElement('input')
@@ -88,7 +87,6 @@
     submitInput.value = submitButton.value || true
     submitInput.name = submitButton.name
     form.appendChild(submitInput)
-    uploadS3Inputs(form)
   }
 
   function uploadS3Inputs (form) {
