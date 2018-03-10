@@ -17,12 +17,12 @@ class TestS3FileMiddleware:
     def test_process_request(self, rf):
         uploaded_file = SimpleUploadedFile('uploaded_file.txt', b'uploaded')
         request = rf.post('/', data={'file': uploaded_file})
-        S3FileMiddleware().process_request(request)
+        S3FileMiddleware(lambda x: None)(request)
         assert request.FILES.getlist('file')
         assert request.FILES.get('file').read() == b'uploaded'
 
         default_storage.save('s3_file.txt', ContentFile(b's3file'))
         request = rf.post('/', data={'file': 's3_file.txt', 's3file': 'file'})
-        S3FileMiddleware().process_request(request)
+        S3FileMiddleware(lambda x: None)(request)
         assert request.FILES.getlist('file')
         assert request.FILES.get('file').read() == b's3file'
