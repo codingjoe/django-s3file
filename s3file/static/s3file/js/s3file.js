@@ -106,13 +106,13 @@
     })
     forms = new Set(forms)
     forms.forEach(form => {
-      form.onsubmit = (e) => {
+      form.addEventListener('submit', (e) => {
         e.preventDefault()
         uploadS3Inputs(e.target)
-      }
+      })
       let submitButtons = form.querySelectorAll('input[type=submit], button[type=submit]')
       Array.from(submitButtons).forEach(submitButton => {
-        submitButton.onclick = clickSubmit
+        submitButton.addEventListener('click',  clickSubmit)
       }
       )
     })
