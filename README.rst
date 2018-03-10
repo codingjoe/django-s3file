@@ -20,7 +20,7 @@ Features
 Installation
 ------------
 
-*Make sure you have `Amazon S3 storage`_ setup correctly.*
+Make sure you have `Amazon S3 storage`_ setup correctly.
 
 Just install S3file using ``pip``.
 
