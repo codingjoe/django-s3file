@@ -84,7 +84,7 @@
     let form = submitButton.closest('form')
     const submitInput = document.createElement('input')
     submitInput.type = 'hidden'
-    submitInput.value = submitButton.value || true
+    submitInput.value = submitButton.value || '1'
     submitInput.name = submitButton.name
     form.appendChild(submitInput)
   }
