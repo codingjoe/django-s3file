@@ -119,17 +119,10 @@ class TestS3FileInput:
 
         widget = ClearableFileInput(attrs={'accept': 'application/pdf,image/*'})
         assert 'accept="application/pdf,image/*"' in widget.render(name='file', value='test.jpg')
-        assert ["starts-with", "$Content-Type", "image/"] in widget.get_conditions(
+        assert ["starts-with", "$Content-Type", ""] in widget.get_conditions(
             'application/pdf,image/*')
-        assert {"Content-Type": 'application/pdf'} in widget.get_conditions(
+        assert {"Content-Type": 'application/pdf'} not in widget.get_conditions(
             'application/pdf,image/*')
-
-        widget = ClearableFileInput(attrs={'accept': 'application/pdf, image/*'})
-        assert 'accept="application/pdf, image/*"' in widget.render(name='file', value='test.jpg')
-        assert ["starts-with", "$Content-Type", "image/"] in widget.get_conditions(
-            'application/pdf, image/*')
-        assert {"Content-Type": 'application/pdf'} in widget.get_conditions(
-            'application/pdf, image/*')
 
     def test_no_js_error(self, driver, live_server):
         driver.get(live_server + self.url)

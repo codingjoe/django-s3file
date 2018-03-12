@@ -54,15 +54,12 @@ class S3FileInputMixin:
             ["starts-with", "$key", self.upload_folder],
             {"success_action_status": "201"},
         ]
-        if accept:
-            accept = accept.replace(' ', '')  # remove whitespaces
-            mime_types = accept.split(',') if accept else []  # catch empty string
-            for mime_type in mime_types:
-                top_type, sub_type = mime_type.split('/', 1)
-                if sub_type == '*':
-                    conditions.append(["starts-with", "$Content-Type", "%s/" % top_type])
-                else:
-                    conditions.append({"Content-Type": mime_type})
+        if accept and ',' not in accept:
+            top_type, sub_type = accept.split('/', 1)
+            if sub_type == '*':
+                conditions.append(["starts-with", "$Content-Type", "%s/" % top_type])
+            else:
+                conditions.append({"Content-Type": accept})
         else:
             conditions.append(["starts-with", "$Content-Type", ""])
 
