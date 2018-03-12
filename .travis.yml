@@ -5,7 +5,6 @@ cache:
 - apt
 - pip
 addons:
-  firefox: latest
   apt:
     sources:
     - google-chrome
