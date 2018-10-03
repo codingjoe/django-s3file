@@ -15,7 +15,7 @@ Features
 -  lightweight: less 200 lines
 -  no JavaScript or Python dependencies (no jQuery)
 -  easy integration
--  works just like the build-in
+-  works just like the built-in
 
 Installation
 ------------
@@ -91,14 +91,14 @@ to your CORS policy.
 Uploading multiple files
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Django does have limited `support to uploaded multiple files`_. S3File
+Django does have limited support for `uploading multiple files`_. S3File
 fully supports this feature. The custom middleware makes ensure that
-files are accessible via ``request.FILES``, even thogh they have been
+files are accessible via ``request.FILES``, even though they have been
 uploaded to AWS S3 directly and not to your Django application server.
 
 .. _Amazon S3 storage: http://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
 .. _setup expiration: http://docs.aws.amazon.com/AmazonS3/latest/dev/intro-lifecycle-rules.html
-.. _support to uploaded multiple files: https://docs.djangop
+.. _uploading multiple files: https://docs.djangoproject.com/en/2.1/topics/http/file-uploads/#uploading-multiple-files
 
 .. |PyPi Version| image:: https://img.shields.io/pypi/v/django-s3file.svg
    :target: https://pypi.python.org/pypi/django-s3file/
