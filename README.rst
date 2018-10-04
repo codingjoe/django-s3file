@@ -98,7 +98,7 @@ uploaded to AWS S3 directly and not to your Django application server.
 
 .. _Amazon S3 storage: http://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
 .. _setup expiration: http://docs.aws.amazon.com/AmazonS3/latest/dev/intro-lifecycle-rules.html
-.. _uploading multiple files: https://docs.djangoproject.com/en/2.1/topics/http/file-uploads/#uploading-multiple-files
+.. _uploading multiple files: https://docs.djangoproject.com/en/stable/topics/http/file-uploads/#uploading-multiple-files
 
 .. |PyPi Version| image:: https://img.shields.io/pypi/v/django-s3file.svg
    :target: https://pypi.python.org/pypi/django-s3file/
