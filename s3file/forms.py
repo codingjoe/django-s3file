@@ -4,7 +4,6 @@ import uuid
 
 from django.conf import settings
 from django.core.files.storage import default_storage
-from django.forms.widgets import ClearableFileInput
 from django.utils.functional import cached_property
 
 logger = logging.getLogger('s3file')
