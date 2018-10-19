@@ -1,7 +1,6 @@
 from django.conf.urls import url
-from django.views.generic import FormView
 
-from . import forms, views
+from . import views
 
 urlpatterns = [
     url(r'^s3/$',
