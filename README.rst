@@ -17,6 +17,11 @@ Features
 -  easy integration
 -  works just like the built-in
 
+For the Nerds
+-------------
+
+.. image:: http-message-flow.svg
+
 Installation
 ------------
 

@@ -1,0 +1,8 @@
+Client->AWS S3:POST large file
+AWS S3->Client:RESPONSE AWS S3 key
+Client->S3FileMiddleware:POST AWS S3 key
+S3FileMiddleware->AWS S3:GET AWS S3 key
+AWS S3->S3FileMiddleware:RESPONSE large file
+S3FileMiddleware->DjangoView:request incl. large file
+DjangoView->Client:RESPONSE success
+
