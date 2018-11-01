@@ -4,7 +4,6 @@ import os
 from botocore.exceptions import ClientError
 from django.core.files.storage import default_storage
 
-
 logger = logging.getLogger('s3file')
 
 
