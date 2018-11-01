@@ -1,6 +1,10 @@
+import logging
 import os
 
+from botocore.exceptions import ClientError
 from django.core.files.storage import default_storage
+
+logger = logging.getLogger('s3file')
 
 
 class S3FileMiddleware:
@@ -22,4 +26,7 @@ class S3FileMiddleware:
         for path in paths:
             f = default_storage.open(path)
             f.name = os.path.basename(path)
-            yield f
+            try:
+                yield f
+            except ClientError:
+                logger.exception("File not found: %s", path)
