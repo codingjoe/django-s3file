@@ -1,3 +1,4 @@
+import base64
 import logging
 import pathlib
 import uuid
@@ -68,7 +69,9 @@ class S3FileInputMixin:
     def upload_folder(self):
         return str(pathlib.PurePosixPath(
             self.upload_path,
-            uuid.uuid4().hex,
+            base64.urlsafe_b64encode(
+                uuid.uuid4().bytes
+            ).decode('utf-8').rstrip('=\n'),
         ))  # S3 uses POSIX paths
 
     class Media:
