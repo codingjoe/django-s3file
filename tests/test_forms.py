@@ -165,3 +165,7 @@ class TestS3FileInput:
 
     def test_media(self):
         assert ClearableFileInput().media._js == ['s3file/js/s3file.js']
+
+    def test_upload_folder(self):
+        assert ClearableFileInput().upload_folder.startswith('tmp/s3file/')
+        assert len(ClearableFileInput().upload_folder) == 43

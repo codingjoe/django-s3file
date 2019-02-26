@@ -1,5 +1,5 @@
 import logging
-import os
+import pathlib
 import uuid
 
 from django.conf import settings
@@ -13,7 +13,7 @@ class S3FileInputMixin:
     """FileInput that uses JavaScript to directly upload to Amazon S3."""
 
     needs_multipart_form = False
-    upload_path = getattr(settings, 'S3FILE_UPLOAD_PATH', os.path.join('tmp', 's3file'))
+    upload_path = getattr(settings, 'S3FILE_UPLOAD_PATH', pathlib.PurePosixPath('tmp', 's3file'))
     expires = settings.SESSION_COOKIE_AGE
 
     @property
@@ -29,7 +29,7 @@ class S3FileInputMixin:
 
         accept = attrs.get('accept')
         response = self.client.generate_presigned_post(
-            self.bucket_name, os.path.join(self.upload_folder, '${filename}'),
+            self.bucket_name, str(pathlib.PurePosixPath(self.upload_folder, '${filename}')),
             Conditions=self.get_conditions(accept),
             ExpiresIn=self.expires,
         )
@@ -50,7 +50,7 @@ class S3FileInputMixin:
     def get_conditions(self, accept):
         conditions = [
             {"bucket": self.bucket_name},
-            ["starts-with", "$key", self.upload_folder],
+            ["starts-with", "$key", str(self.upload_folder)],
             {"success_action_status": "201"},
         ]
         if accept and ',' not in accept:
@@ -66,10 +66,10 @@ class S3FileInputMixin:
 
     @cached_property
     def upload_folder(self):
-        return os.path.join(
+        return str(pathlib.PurePosixPath(
             self.upload_path,
             uuid.uuid4().hex,
-        )
+        ))  # S3 uses POSIX paths
 
     class Media:
         js = (
