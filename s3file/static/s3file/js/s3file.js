@@ -1,4 +1,7 @@
 'use strict';
+var fileProgress = {};
+var s3ProgressDiv = null;
+var currProgressPercent = 0;
 
 (() => {
   function parseURL (text) {
@@ -16,6 +19,35 @@
     form.appendChild(input)
   }
 
+  function calculateFileUploadProgress() {
+    const keys = Object.keys(fileProgress);
+    var loaded = 0, total = 0;
+    for (const k of keys) {
+      const e = fileProgress[k];
+      if (e.lengthComputable) {
+        loaded += e.loaded;
+        total += e.total;
+      }
+    }
+    if (total === 0) {
+      return 0;
+    }
+    else {
+      return Math.round((loaded / total) * 100);
+    }
+  }
+
+  function calculateProgressAndSetStyle() {
+    var percentage = calculateFileUploadProgress();
+    if (s3ProgressDiv && currProgressPercent !== percentage) {
+      var pctTxt = percentage.toString() + '%';
+      // set the text value and progress style, if we found an s3ProgressDiv
+      s3ProgressDiv.innerHTML = pctTxt;
+      s3ProgressDiv.style.width = pctTxt;
+    }
+    currProgressPercent = percentage;
+  }
+
   function waitForAllFiles (form) {
     if (window.uploading !== 0) {
       setTimeout(() => {
@@ -26,7 +58,7 @@
     }
   }
 
-  function request (method, url, data) {
+  function request (method, url, data, currFilePart) {
     return new Promise((resolve, reject) => {
       const xhr = new window.XMLHttpRequest()
       xhr.open(method, url)
@@ -36,6 +68,10 @@
         } else {
           reject(xhr.statusText)
         }
+      }
+      xhr.upload.onprogress = (e) => {
+        fileProgress[currFilePart] = e
+        calculateProgressAndSetStyle();
       }
       xhr.onerror = () => {
         reject(xhr.statusText)
@@ -48,6 +84,7 @@
     const url = fileInput.getAttribute('data-url')
     const promises = Array.from(fileInput.files).map((file) => {
       const s3Form = new window.FormData()
+      var currFilePart = 0;
       Array.from(fileInput.attributes).forEach(attr => {
         let name = attr.name
         if (name.startsWith('data-fields')) {
@@ -55,10 +92,11 @@
           s3Form.append(name, attr.value)
         }
       })
+      currFilePart += 1;
       s3Form.append('success_action_status', '201')
       s3Form.append('Content-Type', file.type)
       s3Form.append('file', file)
-      return request('POST', url, s3Form)
+      return request('POST', url, s3Form, currFilePart)
     })
     Promise.all(promises).then((results) => {
       results.forEach((result) => {
@@ -101,6 +139,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    s3ProgressDiv = document.getElementById("s3UploadFileProgress");
     let forms = Array.from(document.querySelectorAll('.s3file')).map(input => {
       return input.closest('form')
     })
