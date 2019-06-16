@@ -21,7 +21,6 @@ env:
     - DJANGO=20
     - DJANGO=21
     - DJANGO=master
-    - TOXENV=qa
 matrix:
   fast_finish: true
   allow_failures:
