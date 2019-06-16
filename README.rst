@@ -5,7 +5,7 @@ A lightweight file upload input for Django and Amazon S3.
 
 Django-S3File allows you to upload files directly AWS S3 effectively
 bypassing your application server. This allows you to avoid long running
-requests from large file uploads. This is particuallary helpful for if
+requests from large file uploads. This is particularly helpful for if
 you run your service on AWS Lambda or Heroku where you have a hard request
 limit.
 
