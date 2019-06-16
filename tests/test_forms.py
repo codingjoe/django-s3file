@@ -1,3 +1,4 @@
+import json
 from contextlib import contextmanager
 
 import pytest
@@ -7,7 +8,6 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.expected_conditions import staleness_of
 from selenium.webdriver.support.wait import WebDriverWait
 
-from s3file.forms import S3FileInputMixin
 from tests.testapp.forms import UploadForm
 
 try:
@@ -30,13 +30,6 @@ class TestS3FileInput:
     @property
     def url(self):
         return reverse('upload')
-
-    @pytest.fixture(autouse=True)
-    def patch(self):
-        if S3FileInputMixin not in ClearableFileInput.__bases__:
-            ClearableFileInput.__bases__ = \
-                (S3FileInputMixin,) + ClearableFileInput.__bases__
-        pass
 
     @pytest.fixture
     def freeze(self, monkeypatch):
@@ -170,6 +163,26 @@ class TestS3FileInput:
             save_button.click()
         assert 'save_continue' in driver.page_source
         assert 'continue_value' in driver.page_source
+
+    def test_progress(self, driver, live_server, upload_file, freeze):
+        driver.get(live_server + self.url)
+        file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
+        file_input.send_keys(upload_file)
+        assert file_input.get_attribute('name') == 'file'
+        save_button = driver.find_element_by_xpath('//input[@name=\'save\']')
+        with wait_for_page_load(driver, timeout=10):
+            save_button.click()
+        assert 'save' in driver.page_source
+
+        driver.get(live_server + self.url)
+        file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
+        file_input.send_keys(upload_file)
+        assert file_input.get_attribute('name') == 'file'
+        save_button = driver.find_element_by_xpath('//button[@name=\'save_continue\']')
+        with wait_for_page_load(driver, timeout=10):
+            save_button.click()
+        response = json.loads(driver.find_elements_by_css_selector('pre')[0].text)
+        assert response['progress'] == '1'
 
     def test_media(self):
         assert ClearableFileInput().media._js == ['s3file/js/s3file.js']
