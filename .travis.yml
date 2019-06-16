@@ -1,52 +1,72 @@
 language: python
 sudo: false
-dist: trusty
+
 cache:
-- apt
-- pip
+  - packages
+  - pip
+
 addons:
   apt:
     sources:
-    - google-chrome
+      - google-chrome
     packages:
-    - google-chrome-stable
+      - google-chrome-stable
 python:
-- '3.6'
+  - "3.6"
 env:
   global:
-  - CHROME_DRIVER_VERSION=2.36
+    - CHROME_DRIVER_VERSION=2.36
   matrix:
-  - DJANGO=111
-  - DJANGO=20
-  - DJANGO=21
-  - DJANGO=master
-  - TOXENV=qa
+    - DJANGO=111
+    - DJANGO=20
+    - DJANGO=21
+    - DJANGO=master
+    - TOXENV=qa
 matrix:
   fast_finish: true
   allow_failures:
-  - env: DJANGO=master
+    - env: DJANGO=master
 install:
-- pip install -qU pip tox codecov
+  - pip install -qU pip tox codecov
+  - npm install --dev
 before_script:
-- mkdir bin
-- curl -O https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
-- unzip chromedriver_linux64.zip -d bin
-- PATH=$PATH:$PWD/bin
-- |
-  if [[ -z $TOXENV ]]; then
-    export TOXENV=py$(echo $TRAVIS_PYTHON_VERSION | sed -e 's/\.//g')-dj$DJANGO
-  fi
-- echo $TOXENV
+  - mkdir bin
+  - curl -O https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
+  - unzip chromedriver_linux64.zip -d bin
+  - PATH=$PATH:$PWD/bin
+  - |
+    if [[ -z $TOXENV ]]; then
+      export TOXENV=py$(echo $TRAVIS_PYTHON_VERSION | sed -e 's/\.//g')-dj$DJANGO
+    fi
+  - echo $TOXENV
 script:
-- tox -e $TOXENV
-after_success:
-- codecov
-deploy:
-  provider: pypi
-  user: codingjoe
-  password:
-    secure: OzNShO+N3zL3LIyJ7Fu/TFgJTaI+FlZxLItjPTu5tAfvrxPWmKXJkA7b8znx5O2w0kSynk0R1Ddyd6Ri4AIyS5SGm2ZbvrTyIpaXPvWMBl1o8X/nH14f61HP2piEtnk24FBLTbublgC9N1G4w/166jAwv2dxS9aWJGioAlSOgH8=
-  on:
-    tags: true
-    distributions: sdist bdist_wheel
-    repo: codingjoe/django-s3file
+  - tox -e $TOXENV
+after_success: codecov
+
+stages:
+  - test
+  - name: deploy
+    if: tag is present
+
+jobs:
+  include:
+    - language: node_js
+      addons: {}
+      install: npm install --dev
+      script: npm test
+      node_js: lts/*
+      cache: npm
+    - stage: deploy
+      python: "3.7"
+      install: skip
+      script: skip
+      after_success: true
+      deploy:
+        provider: pypi
+        distributions: sdist bdist_wheel
+        on:
+          tags: true
+          repo: codingjoe/django-s3file
+        user: codingjoe
+        password:
+          secure: OzNShO+N3zL3LIyJ7Fu/TFgJTaI+FlZxLItjPTu5tAfvrxPWmKXJkA7b8znx5O2w0kSynk0R1Ddyd6Ri4AIyS5SGm2ZbvrTyIpaXPvWMBl1o8X/nH14f61HP2piEtnk24FBLTbublgC9N1G4w/166jAwv2dxS9aWJGioAlSOgH8=

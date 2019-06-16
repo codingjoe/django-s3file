@@ -1,0 +1,30 @@
+{
+  "name": "django-s3file",
+  "version": "1.0.0",
+  "description": "A lightweight file uploader input for Django and Amazon S3",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "standard"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codingjoe/django-s3file.git"
+  },
+  "keywords": [
+    "aws",
+    "s3",
+    "django",
+    "file"
+  ],
+  "author": "Johannes Hoppe <info@johanneshoppe.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/codingjoe/django-s3file/issues"
+  },
+  "homepage": "https://github.com/codingjoe/django-s3file#readme",
+  "dependencies": {
+    "standard": "*"
+  }
+}
