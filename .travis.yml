@@ -1,5 +1,6 @@
 language: python
 sudo: false
+dist: xenial
 
 cache:
   - packages
@@ -13,6 +14,7 @@ addons:
       - google-chrome-stable
 python:
   - "3.6"
+  - "3.7"
 env:
   global:
     - CHROME_DRIVER_VERSION=2.36
