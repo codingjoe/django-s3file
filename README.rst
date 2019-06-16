@@ -139,7 +139,7 @@ entire form.
 
     (function () {
         var form = document.getElementsByTagName('form')[0]
-        var progressBar = document.getElementsByClassName('progress-bar')[0
+        var progressBar = document.getElementsByClassName('progress-bar')[0]
 
         form.addEventListener('progress', function (event) {
             // event.detail.progress is a value between 0 and 1
