@@ -11,8 +11,7 @@ from selenium.common.exceptions import WebDriverException
 @pytest.yield_fixture(scope='session')
 def driver():
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('headless')
-    chrome_options.add_argument('window-size=1200x800')
+    chrome_options.headless = True
     try:
         b = webdriver.Chrome(options=chrome_options)
     except WebDriverException as e:
