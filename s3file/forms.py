@@ -4,8 +4,9 @@ import pathlib
 import uuid
 
 from django.conf import settings
-from django.core.files.storage import default_storage
 from django.utils.functional import cached_property
+
+from s3file.storages import storage
 
 logger = logging.getLogger('s3file')
 
@@ -21,11 +22,11 @@ class S3FileInputMixin:
 
     @property
     def bucket_name(self):
-        return default_storage.bucket.name
+        return storage.bucket.name
 
     @property
     def client(self):
-        return default_storage.connection.meta.client
+        return storage.connection.meta.client
 
     def build_attrs(self, *args, **kwargs):
         attrs = super().build_attrs(*args, **kwargs)

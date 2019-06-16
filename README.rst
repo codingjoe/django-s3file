@@ -106,8 +106,8 @@ Progress Bar
 ------------
 
 S3File does emit progress signals that can be used to display some kind of progress bar.
-Signals named `progress` are emitted for both each individual file input as well as for
-the form as a whole.
+Signals named ``progress`` are emitted for both each individual file input as well as
+for the form as a whole.
 
 The progress signal carries the following details:
 
@@ -150,6 +150,24 @@ entire form.
             progressBar.innerText = percent + '%'
         })
     })()
+
+
+Using S3File in development
+---------------------------
+
+Using S3File in development can be helpful especially if you want to use the progress
+signals described above. Therefore, S3File comes with a AWS S3 dummy backend.
+It behaves similar to the real S3 storage backend. It is automatically enabled, if the
+``DEFAULT_FILE_STORAGE`` setting is set to ``FileSystemStorage``.
+
+To prevent users from accidentally using the ``FileSystemStorage`` and the insecure S3
+dummy backend in production, there is also an additional deployment check that will
+error if you run Django's deployment check suite::
+
+    python manage.py check --deploy
+
+We recommend always running the deployment check suite as part of your deployment
+pipeline.
 
 Uploading multiple files
 ------------------------
