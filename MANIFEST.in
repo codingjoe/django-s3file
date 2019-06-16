@@ -1,0 +1,6 @@
+include s3file/static/s3file/js/s3file.js
+prune tests
+prune .github
+exclude .fussyfox.yml
+exclude .travis.yml
+exclude .gitignore

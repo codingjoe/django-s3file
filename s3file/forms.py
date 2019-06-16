@@ -14,7 +14,9 @@ class S3FileInputMixin:
     """FileInput that uses JavaScript to directly upload to Amazon S3."""
 
     needs_multipart_form = False
-    upload_path = getattr(settings, 'S3FILE_UPLOAD_PATH', pathlib.PurePosixPath('tmp', 's3file'))
+    upload_path = getattr(
+        settings, 'S3FILE_UPLOAD_PATH', pathlib.PurePosixPath('tmp', 's3file')
+    )
     expires = settings.SESSION_COOKIE_AGE
 
     @property
@@ -30,7 +32,8 @@ class S3FileInputMixin:
 
         accept = attrs.get('accept')
         response = self.client.generate_presigned_post(
-            self.bucket_name, str(pathlib.PurePosixPath(self.upload_folder, '${filename}')),
+            self.bucket_name,
+            str(pathlib.PurePosixPath(self.upload_folder, '${filename}')),
             Conditions=self.get_conditions(accept),
             ExpiresIn=self.expires,
         )

@@ -59,7 +59,10 @@ class TestS3FileInput:
         assert not form.is_valid()
 
     def test_file_does_not_exist_no_fallback(self, filemodel):
-        form = UploadForm(data={'file': 'foo.bar', 's3file': 'file'}, instance=filemodel)
+        form = UploadForm(
+            data={'file': 'foo.bar', 's3file': 'file'},
+            instance=filemodel,
+        )
         assert form.is_valid()
         assert form.cleaned_data['file'] == filemodel.file
 
@@ -110,14 +113,19 @@ class TestS3FileInput:
 
         widget = ClearableFileInput(attrs={'accept': 'image/*'})
         assert 'accept="image/*"' in widget.render(name='file', value='test.jpg')
-        assert ["starts-with", "$Content-Type", "image/"] in widget.get_conditions('image/*')
+        assert [
+                   "starts-with", "$Content-Type", "image/"
+               ] in widget.get_conditions('image/*')
 
         widget = ClearableFileInput(attrs={'accept': 'image/jpeg'})
         assert 'accept="image/jpeg"' in widget.render(name='file', value='test.jpg')
         assert {"Content-Type": 'image/jpeg'} in widget.get_conditions('image/jpeg')
 
         widget = ClearableFileInput(attrs={'accept': 'application/pdf,image/*'})
-        assert 'accept="application/pdf,image/*"' in widget.render(name='file', value='test.jpg')
+        assert 'accept="application/pdf,image/*"' in widget.render(
+            name='file',
+            value='test.jpg',
+        )
         assert ["starts-with", "$Content-Type", ""] in widget.get_conditions(
             'application/pdf,image/*')
         assert {"Content-Type": 'application/pdf'} not in widget.get_conditions(
