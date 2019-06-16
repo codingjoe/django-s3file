@@ -1,3 +1,4 @@
+=============
 django-s3file
 =============
 
@@ -11,6 +12,7 @@ limit.
 
 |PyPi Version| |Build Status| |Test Coverage| |GitHub license|
 
+--------
 Features
 --------
 
@@ -18,12 +20,15 @@ Features
 -  no JavaScript or Python dependencies (no jQuery)
 -  easy integration
 -  works just like the built-in
+-  extendable JavaScript API
 
+-------------
 For the Nerds
 -------------
 
 .. image:: http-message-flow.svg
 
+------------
 Installation
 ------------
 
@@ -34,6 +39,8 @@ Just install S3file using ``pip``.
 .. code:: bash
 
     pip install django-s3file
+    # or
+    pipenv install django-s3file
 
 Add the S3File app and middleware in your settings:
 
@@ -52,6 +59,7 @@ Add the S3File app and middleware in your settings:
         '...',
     )
 
+-----
 Usage
 -----
 
@@ -63,7 +71,7 @@ when the ``DEFAULT_FILE_STORAGE`` setting is set to
 ``django-storages``\ ’ ``S3Boto3Storage``.
 
 Setting up the AWS S3 bucket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
 Upload folder
 ~~~~~~~~~~~~~
@@ -89,14 +97,62 @@ to your CORS policy.
         <CORSRule>
             <AllowedOrigin>*</AllowedOrigin>
             <AllowedMethod>POST</AllowedMethod>
-            <AllowedMethod>GET</AllowedMethod>
             <MaxAgeSeconds>3000</MaxAgeSeconds>
             <AllowedHeader>*</AllowedHeader>
         </CORSRule>
     </CORSConfiguration>
 
+Progress Bar
+------------
+
+S3File does emit progress signals that can be used to display some kind of progress bar.
+Signals named `progress` are emitted for both each individual file input as well as for
+the form as a whole.
+
+The progress signal carries the following details:
+
+.. code:: javascript
+
+    console.log(event.detail)
+
+    {
+        progress: 0.4725307607171312  // total upload progress of either a form or single input
+        loaded: 1048576  // total upload progress of either a form or single input
+        total: 2219064  // total bytes to upload
+        currentFile: File {…}  // file object
+        currentFileName: "text.txt"  // file name of the file currently uploaded
+        currentFileProgress: 0.47227834703299176  // upload progress of that file
+        originalEvent: ProgressEvent {…} // the original XHR onprogress event
+    }
+
+
+The following example implements a Boostrap progress bar for upload progress of an
+entire form.
+
+.. code:: html
+
+    <div class="progress">
+      <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+    </div>
+
+.. code:: javascript
+
+    (function () {
+        var form = document.getElementsByTagName('form')[0]
+        var progressBar = document.getElementsByClassName('progress-bar')[0
+
+        form.addEventListener('progress', function (event) {
+            // event.detail.progress is a value between 0 and 1
+            var percent = Math.round(event.detail.progress * 100)
+
+            progressBar.setAttribute('style', 'width:' + percent + '%')
+            progressBar.setAttribute('aria-valuenow', percent)
+            progressBar.innerText = percent + '%'
+        })
+    })()
+
 Uploading multiple files
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 Django does have limited support for `uploading multiple files`_. S3File
 fully supports this feature. The custom middleware makes ensure that

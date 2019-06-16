@@ -26,7 +26,8 @@
     }
   }
 
-  function request (method, url, data) {
+  function request (method, url, data, fileInput, file, form) {
+    file.loaded = 0
     return new Promise(function (resolve, reject) {
       var xhr = new window.XMLHttpRequest()
       xhr.open(method, url)
@@ -39,16 +40,51 @@
         }
       }
 
+      xhr.upload.onprogress = function (e) {
+        var diff = e.loaded - file.loaded
+        form.loaded += diff
+        fileInput.loaded += diff
+        file.loaded = e.loaded
+
+        var defaultEventData = {
+          currentFile: file,
+          currentFileName: file.name,
+          currentFileProgress: Math.min(e.loaded / e.total, 1),
+          originalEvent: e
+        }
+
+        form.dispatchEvent(new window.CustomEvent('progress', {
+          detail: Object.assign({
+            progress: Math.min(form.loaded / form.total, 1),
+            loaded: form.loaded,
+            total: form.total
+          }, defaultEventData)
+        }))
+
+        fileInput.dispatchEvent(new window.CustomEvent('progress', {
+          detail: Object.assign({
+            progress: Math.min(fileInput.loaded / fileInput.total, 1),
+            loaded: fileInput.loaded,
+            total: fileInput.total
+          }, defaultEventData)
+        }))
+      }
+
       xhr.onerror = function () {
         reject(xhr.statusText)
       }
+
       xhr.send(data)
     })
   }
 
   function uploadFiles (form, fileInput, name) {
     var url = fileInput.getAttribute('data-url')
+    fileInput.loaded = 0
+    fileInput.total = 0
     var promises = Array.from(fileInput.files).map(function (file) {
+      form.total += file.size
+      fileInput.total += file.size
       var s3Form = new window.FormData()
       Array.from(fileInput.attributes).forEach(function (attr) {
         var name = attr.name
@@ -61,7 +97,7 @@
       s3Form.append('success_action_status', '201')
       s3Form.append('Content-Type', file.type)
       s3Form.append('file', file)
-      return request('POST', url, s3Form)
+      return request('POST', url, s3Form, fileInput, file, form)
     })
     Promise.all(promises).then(function (results) {
       results.forEach(function (result) {
@@ -93,6 +129,8 @@
 
   function uploadS3Inputs (form) {
     window.uploading = 0
+    form.loaded = 0
+    form.total = 0
     var inputs = form.querySelectorAll('.s3file')
     Array.from(inputs).forEach(function (input) {
       window.uploading += 1
