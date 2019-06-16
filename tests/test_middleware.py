@@ -26,3 +26,9 @@ class TestS3FileMiddleware:
         S3FileMiddleware(lambda x: None)(request)
         assert request.FILES.getlist('file')
         assert request.FILES.get('file').read() == b's3file'
+
+    def test_process_request__no_file(self, rf, caplog):
+        request = rf.post('/', data={'file': 'does_not_exist.txt', 's3file': 'file'})
+        S3FileMiddleware(lambda x: None)(request)
+        assert not request.FILES.getlist('file')
+        assert 'File not found: does_not_exist.txt' in caplog.text
