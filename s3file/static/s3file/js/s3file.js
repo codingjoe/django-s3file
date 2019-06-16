@@ -96,7 +96,7 @@
       window.uploading += 1
       uploadFiles(form, input, input.name)
     }
-      )
+    )
     waitForAllFiles(form)
   }
 
@@ -112,7 +112,7 @@
       })
       let submitButtons = form.querySelectorAll('input[type=submit], button[type=submit]')
       Array.from(submitButtons).forEach(submitButton => {
-        submitButton.addEventListener('click',  clickSubmit)
+        submitButton.addEventListener('click', clickSubmit)
       }
       )
     })
