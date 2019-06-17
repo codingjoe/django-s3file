@@ -53,3 +53,4 @@ AWS_STORAGE_BUCKET_NAME = 'test-bucket'
 AWS_S3_REGION_NAME = 'eu-central-1'
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_DEFAULT_ACL = None
+AWS_LOCATION = 'custom/location/'

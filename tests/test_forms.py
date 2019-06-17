@@ -3,12 +3,12 @@ import os
 from contextlib import contextmanager
 
 import pytest
-from django.core.files.storage import default_storage
 from django.forms import ClearableFileInput
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.expected_conditions import staleness_of
 from selenium.webdriver.support.wait import WebDriverWait
 
+from s3file.storages import storage
 from tests.testapp.forms import UploadForm
 
 try:
@@ -35,11 +35,14 @@ class TestS3FileInput:
     @pytest.fixture
     def freeze(self, monkeypatch):
         """Freeze datetime and UUID."""
-        monkeypatch.setattr('s3file.forms.S3FileInputMixin.upload_folder', 'tmp')
+        monkeypatch.setattr(
+            's3file.forms.S3FileInputMixin.upload_folder',
+            os.path.join(storage.location, 'tmp'),
+        )
 
     def test_value_from_datadict(self, client, upload_file):
         with open(upload_file) as f:
-            uploaded_file = default_storage.save('test.jpg', f)
+            uploaded_file = storage.save('test.jpg', f)
         response = client.post(reverse('upload'), {
             'file': json.dumps([uploaded_file]),
             's3file': '["file"]',
@@ -96,7 +99,7 @@ class TestS3FileInput:
         assert all(condition in conditions for condition in [
             {"bucket": 'test-bucket'},
             {"success_action_status": "201"},
-            ['starts-with', '$key', 'tmp'],
+            ['starts-with', '$key', 'custom/location/tmp'],
             ["starts-with", "$Content-Type", ""]
         ]), conditions
 
@@ -139,7 +142,7 @@ class TestS3FileInput:
         assert file_input.get_attribute('name') == 'file'
         with wait_for_page_load(driver, timeout=10):
             file_input.submit()
-        assert default_storage.exists('tmp/%s.txt' % request.node.name)
+        assert storage.exists('tmp/%s.txt' % request.node.name)
 
         with pytest.raises(NoSuchElementException):
             error = driver.find_element_by_xpath('//body[@JSError]')
@@ -208,5 +211,7 @@ class TestS3FileInput:
         assert ClearableFileInput().media._js == ['s3file/js/s3file.js']
 
     def test_upload_folder(self):
-        assert ClearableFileInput().upload_folder.startswith('tmp/s3file/')
-        assert len(ClearableFileInput().upload_folder) == 33
+        assert ClearableFileInput().upload_folder.startswith(
+            'custom/location/tmp/s3file/'
+        )
+        assert len(ClearableFileInput().upload_folder) == 49

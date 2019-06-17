@@ -1,16 +1,16 @@
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from s3file.middleware import S3FileMiddleware
+from s3file.storages import storage
 
 
 class TestS3FileMiddleware:
 
     def test_get_files_from_storage(self):
         content = b'test_get_files_from_storage'
-        default_storage.save('test_get_files_from_storage', ContentFile(content))
-        files = S3FileMiddleware.get_files_from_storage(['test_get_files_from_storage'])
+        name = storage.save('test_get_files_from_storage', ContentFile(content))
+        files = S3FileMiddleware.get_files_from_storage([name])
         file = next(files)
         assert file.read() == content
 
@@ -21,8 +21,10 @@ class TestS3FileMiddleware:
         assert request.FILES.getlist('file')
         assert request.FILES.get('file').read() == b'uploaded'
 
-        default_storage.save('s3_file.txt', ContentFile(b's3file'))
-        request = rf.post('/', data={'file': '["s3_file.txt"]', 's3file': '["file"]'})
+        storage.save('s3_file.txt', ContentFile(b's3file'))
+        request = rf.post('/', data={
+            'file': '["custom/location/s3_file.txt"]', 's3file': '["file"]'
+        })
         S3FileMiddleware(lambda x: None)(request)
         assert request.FILES.getlist('file')
         assert request.FILES.get('file').read() == b's3file'
