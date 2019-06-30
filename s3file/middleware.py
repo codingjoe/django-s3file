@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -14,9 +15,9 @@ class S3FileMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        file_fields = request.POST.getlist('s3file', [])
+        file_fields = json.loads(request.POST.get('s3file', '[]'))
         for field_name in file_fields:
-            paths = request.POST.getlist(field_name, [])
+            paths = json.loads(request.POST.get(field_name, '[]'))
             request.FILES.setlist(field_name, list(self.get_files_from_storage(paths)))
 
         if local_dev and request.path == '/__s3_mock__/':

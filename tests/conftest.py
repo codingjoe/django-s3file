@@ -31,6 +31,24 @@ def upload_file(request):
 
 
 @pytest.fixture
+def another_upload_file(request):
+    path = tempfile.mkdtemp()
+    file_name = os.path.join(path, 'another_%s.txt' % request.node.name)
+    with open(file_name, 'w') as f:
+        f.write(request.node.name)
+    return file_name
+
+
+@pytest.fixture
+def yet_another_upload_file(request):
+    path = tempfile.mkdtemp()
+    file_name = os.path.join(path, 'yet_another_%s.txt' % request.node.name)
+    with open(file_name, 'w') as f:
+        f.write(request.node.name)
+    return file_name
+
+
+@pytest.fixture
 def filemodel(request, db):
     from tests.testapp.models import FileModel
 

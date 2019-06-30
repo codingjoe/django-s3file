@@ -10,5 +10,5 @@ def test_storage_check():
         call_command('check', '--deploy')
 
     assert (
-        'FileSystemStorage should not be used in a production environment.'
-    ) in str(e.value)
+               'FileSystemStorage should not be used in a production environment.'
+           ) in str(e.value)

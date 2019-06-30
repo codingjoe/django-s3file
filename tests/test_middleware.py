@@ -22,13 +22,16 @@ class TestS3FileMiddleware:
         assert request.FILES.get('file').read() == b'uploaded'
 
         default_storage.save('s3_file.txt', ContentFile(b's3file'))
-        request = rf.post('/', data={'file': 's3_file.txt', 's3file': 'file'})
+        request = rf.post('/', data={'file': '["s3_file.txt"]', 's3file': '["file"]'})
         S3FileMiddleware(lambda x: None)(request)
         assert request.FILES.getlist('file')
         assert request.FILES.get('file').read() == b's3file'
 
     def test_process_request__no_file(self, rf, caplog):
-        request = rf.post('/', data={'file': 'does_not_exist.txt', 's3file': 'file'})
+        request = rf.post(
+            '/',
+            data={'file': '["does_not_exist.txt"]', 's3file': '["file"]'}
+        )
         S3FileMiddleware(lambda x: None)(request)
         assert not request.FILES.getlist('file')
         assert 'File not found: does_not_exist.txt' in caplog.text

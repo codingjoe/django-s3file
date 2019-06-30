@@ -7,15 +7,6 @@
     return decodeURI(tag.childNodes[0].nodeValue)
   }
 
-  function addHiddenInput (body, name, form) {
-    var key = parseURL(body)
-    var input = document.createElement('input')
-    input.type = 'hidden'
-    input.value = key
-    input.name = name
-    form.appendChild(input)
-  }
-
   function waitForAllFiles (form) {
     if (window.uploading !== 0) {
       setTimeout(function () {
@@ -45,14 +36,12 @@
         form.loaded += diff
         fileInput.loaded += diff
         file.loaded = e.loaded
-
         var defaultEventData = {
           currentFile: file,
           currentFileName: file.name,
           currentFileProgress: Math.min(e.loaded / e.total, 1),
           originalEvent: e
         }
-
         form.dispatchEvent(new window.CustomEvent('progress', {
           detail: Object.assign({
             progress: Math.min(form.loaded / form.total, 1),
@@ -60,7 +49,6 @@
             total: form.total
           }, defaultEventData)
         }))
-
         fileInput.dispatchEvent(new window.CustomEvent('progress', {
           detail: Object.assign({
             progress: Math.min(fileInput.loaded / fileInput.total, 1),
@@ -100,15 +88,15 @@
       return request('POST', url, s3Form, fileInput, file, form)
     })
     Promise.all(promises).then(function (results) {
-      results.forEach(function (result) {
-        addHiddenInput(result, name, form)
+      var keys = results.map(function (result) {
+        return parseURL(result)
       })
-      var input = document.createElement('input')
-      input.type = 'hidden'
-      input.name = 's3file'
-      input.value = fileInput.name
+      var hiddenFileInput = document.createElement('input')
+      hiddenFileInput.type = 'hidden'
+      hiddenFileInput.name = name
+      hiddenFileInput.value = JSON.stringify(keys)
+      form.appendChild(hiddenFileInput)
       fileInput.name = ''
-      form.appendChild(input)
       window.uploading -= 1
     }, function (err) {
       console.log(err)
@@ -131,8 +119,15 @@
     window.uploading = 0
     form.loaded = 0
     form.total = 0
-    var inputs = form.querySelectorAll('.s3file')
-    Array.from(inputs).forEach(function (input) {
+    var inputs = Array.from(form.querySelectorAll('.s3file'))
+    var hiddenS3Input = document.createElement('input')
+    hiddenS3Input.type = 'hidden'
+    hiddenS3Input.name = 's3file'
+    form.appendChild(hiddenS3Input)
+    hiddenS3Input.value = JSON.stringify(inputs.map(function (input) {
+      return input.name
+    }))
+    inputs.forEach(function (input) {
       window.uploading += 1
       uploadFiles(form, input, input.name)
     })
