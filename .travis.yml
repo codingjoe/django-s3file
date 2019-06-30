@@ -2,10 +2,6 @@ language: python
 sudo: false
 dist: xenial
 
-branches:
-  only:
-    - master
-
 cache:
   - packages
   - pip
