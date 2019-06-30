@@ -28,7 +28,7 @@ matrix:
     - env: DJANGO=master
 install:
   - pip install -qU pip tox codecov
-  - npm install --dev
+  - npm install --only=dev
 before_script:
   - mkdir bin
   - curl -O https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
@@ -52,13 +52,13 @@ jobs:
   include:
     - language: node_js
       addons: {}
-      install: npm install --dev
+      install: npm install --only=dev
       script: npm test
       node_js: lts/*
       cache: npm
     - stage: deploy
       python: "3.7"
-      install: npm install --dev
+      install: npm install --only=dev
       script: skip
       after_success: true
       deploy:
