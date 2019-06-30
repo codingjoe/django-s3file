@@ -23,8 +23,7 @@ env:
   global:
     - CHROME_DRIVER_VERSION=2.36
   matrix:
-    - DJANGO=20
-    - DJANGO=21
+    - DJANGO=111
     - DJANGO=22
     - DJANGO=master
 matrix:
