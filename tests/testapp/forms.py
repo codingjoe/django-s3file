@@ -12,7 +12,7 @@ if S3FileInputMixin not in forms.ClearableFileInput.__bases__:
 class UploadForm(forms.ModelForm):
     class Meta:
         model = FileModel
-        fields = ('file',)
+        fields = ('file', 'other_file')
         widgets = {
-            'file': forms.ClearableFileInput(attrs={'multiple': True})
+            'file': forms.ClearableFileInput(attrs={'multiple': True}),
         }

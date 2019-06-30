@@ -1,4 +1,5 @@
 import json
+import os
 from contextlib import contextmanager
 
 import pytest
@@ -40,8 +41,8 @@ class TestS3FileInput:
         with open(upload_file) as f:
             uploaded_file = default_storage.save('test.jpg', f)
         response = client.post(reverse('upload'), {
-            'file': uploaded_file,
-            's3file': 'file'
+            'file': json.dumps([uploaded_file]),
+            's3file': '["file"]',
         })
 
         assert response.status_code == 201
@@ -133,7 +134,7 @@ class TestS3FileInput:
 
     def test_file_insert(self, request, driver, live_server, upload_file, freeze):
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
+        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
         with wait_for_page_load(driver, timeout=10):
@@ -146,7 +147,7 @@ class TestS3FileInput:
 
     def test_file_insert_submit_value(self, driver, live_server, upload_file, freeze):
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
+        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
         save_button = driver.find_element_by_xpath('//input[@name=\'save\']')
@@ -155,7 +156,7 @@ class TestS3FileInput:
         assert 'save' in driver.page_source
 
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
+        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
         save_button = driver.find_element_by_xpath('//button[@name=\'save_continue\']')
@@ -166,7 +167,7 @@ class TestS3FileInput:
 
     def test_progress(self, driver, live_server, upload_file, freeze):
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
+        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
         save_button = driver.find_element_by_xpath('//input[@name=\'save\']')
@@ -175,14 +176,33 @@ class TestS3FileInput:
         assert 'save' in driver.page_source
 
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@type=\'file\']')
+        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
         save_button = driver.find_element_by_xpath('//button[@name=\'save_continue\']')
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
         response = json.loads(driver.find_elements_by_css_selector('pre')[0].text)
-        assert response['progress'] == '1'
+        assert response['POST']['progress'] == '1'
+
+    def test_multi_file(self, driver, live_server, freeze,
+                        upload_file, another_upload_file, yet_another_upload_file):
+        driver.get(live_server + self.url)
+        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
+        file_input.send_keys(' \n '.join([upload_file, another_upload_file]))
+        file_input = driver.find_element_by_xpath('//input[@name=\'other_file\']')
+        file_input.send_keys(yet_another_upload_file)
+        save_button = driver.find_element_by_xpath('//input[@name=\'save\']')
+        with wait_for_page_load(driver, timeout=10):
+            save_button.click()
+        response = json.loads(driver.find_elements_by_css_selector('pre')[0].text)
+        assert response['FILES'] == {
+            'file': [
+                os.path.basename(upload_file),
+                os.path.basename(another_upload_file),
+            ],
+            'other_file': [os.path.basename(yet_another_upload_file)]
+        }
 
     def test_media(self):
         assert ClearableFileInput().media._js == ['s3file/js/s3file.js']
