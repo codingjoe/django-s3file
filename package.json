@@ -6,7 +6,9 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "standard"
+    "test": "standard",
+    "postinstall": "uglifyjs --compress -o s3file/static/s3file/js/s3file.min.js s3file/static/s3file/js/s3file.js",
+    "minify": "uglifyjs --compress -o s3file/static/s3file/js/s3file.min.js s3file/static/s3file/js/s3file.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +26,8 @@
     "url": "https://github.com/codingjoe/django-s3file/issues"
   },
   "homepage": "https://github.com/codingjoe/django-s3file#readme",
-  "dependencies": {
-    "standard": "*"
+  "devDependencies": {
+    "standard": "*",
+    "uglify-js": "*"
   }
 }

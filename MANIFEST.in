@@ -1,4 +1,4 @@
-include s3file/static/s3file/js/s3file.js
+include s3file/static/s3file/js/s3file.js s3file/static/s3file/js/s3file.min.js
 prune tests
 prune .github
 exclude .fussyfox.yml
