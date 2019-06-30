@@ -58,7 +58,7 @@ jobs:
       cache: npm
     - stage: deploy
       python: "3.7"
-      install: skip
+      install: npm install --dev
       script: skip
       after_success: true
       deploy:

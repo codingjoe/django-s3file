@@ -80,5 +80,5 @@ class S3FileInputMixin:
 
     class Media:
         js = (
-            's3file/js/s3file.js',
+            's3file/js/s3file.js' if settings.DEBUG else 's3file/js/s3file.min.js',
         )
