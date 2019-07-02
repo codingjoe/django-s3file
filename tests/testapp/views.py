@@ -25,3 +25,7 @@ class ExampleFormView(generic.FormView):
                 'other_file': self.request.FILES.getlist('other_file'),
             }
         }, status=201, encoder=FileEncoder)
+
+
+class UploadFormDirectoryView(ExampleFormView):
+    form_class = forms.UploadFormDirectory

@@ -68,12 +68,19 @@
 
   function uploadFiles (form, fileInput, name) {
     var url = fileInput.getAttribute('data-url')
+    var fieldsKey = fileInput.getAttribute('data-fields-key')
     fileInput.loaded = 0
     fileInput.total = 0
     var promises = Array.from(fileInput.files).map(function (file) {
       form.total += file.size
       fileInput.total += file.size
       var s3Form = new window.FormData()
+      var dirname = file.webkitRelativePath.substr(
+        0, file.webkitRelativePath.lastIndexOf('/') + 1
+      )
+      fileInput.attributes.getNamedItem('data-fields-key').value = fieldsKey.substr(
+        0, fieldsKey.lastIndexOf('/') + 1
+      ) + dirname + fieldsKey.substr(fieldsKey.lastIndexOf('/') + 1)
       Array.from(fileInput.attributes).forEach(function (attr) {
         var name = attr.name
 

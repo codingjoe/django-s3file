@@ -16,3 +16,12 @@ class UploadForm(forms.ModelForm):
         widgets = {
             'file': forms.ClearableFileInput(attrs={'multiple': True}),
         }
+
+
+class UploadFormDirectory(forms.ModelForm):
+    class Meta:
+        model = FileModel
+        fields = ('file', 'other_file')
+        widgets = {
+            'file': forms.ClearableFileInput(attrs={'webkitdirectory': True}),
+        }
