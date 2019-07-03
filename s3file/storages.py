@@ -12,7 +12,7 @@ from django.utils._os import safe_join
 class S3MockStorage(FileSystemStorage):
     @property
     def location(self):
-        return settings.AWS_LOCATION
+        return getattr(settings, 'AWS_LOCATION', '')
 
     def path(self, name):
         return safe_join(os.path.abspath(self.base_location), self.location, name)
