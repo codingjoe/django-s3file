@@ -11,3 +11,4 @@ def storage_check(app_configs, **kwargs):
                 id='s3file.E001',
             )
         ]
+    return []
