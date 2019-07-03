@@ -5,6 +5,7 @@ import uuid
 
 from django.conf import settings
 from django.utils.functional import cached_property
+from storages.utils import safe_join
 
 from s3file.storages import storage
 
@@ -18,6 +19,7 @@ class S3FileInputMixin:
     upload_path = getattr(
         settings, 'S3FILE_UPLOAD_PATH', pathlib.PurePosixPath('tmp', 's3file')
     )
+    upload_path = safe_join(storage.location, upload_path)
     expires = settings.SESSION_COOKIE_AGE
 
     @property
