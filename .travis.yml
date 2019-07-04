@@ -60,10 +60,12 @@ jobs:
       python: "3.7"
       install: npm install --only=dev
       script: skip
+      before_deploy: npm run-script minify
       after_success: true
       deploy:
         provider: pypi
         distributions: sdist bdist_wheel
+        skip_cleanup: true
         on:
           tags: true
           repo: codingjoe/django-s3file
