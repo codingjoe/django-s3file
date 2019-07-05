@@ -29,7 +29,8 @@ class S3FileMiddleware:
     def get_files_from_storage(paths):
         """Return S3 file where the name does not include the path."""
         for path in paths:
-            path = path.replace(os.path.dirname(storage.location) + '/', '', 1)
+            if storage.location:
+                path = path.replace(os.path.dirname(storage.location) + '/', '', 1)
             try:
                 f = storage.open(path)
                 f.name = os.path.basename(path)
