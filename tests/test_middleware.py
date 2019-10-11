@@ -9,7 +9,9 @@ class TestS3FileMiddleware:
 
     def test_get_files_from_storage(self):
         content = b'test_get_files_from_storage'
-        name = storage.save('tmp/s3file/test_get_files_from_storage', ContentFile(content))
+        name = storage.save(
+            'tmp/s3file/test_get_files_from_storage', ContentFile(content)
+        )
         files = S3FileMiddleware.get_files_from_storage([name])
         file = next(files)
         assert file.read() == content
