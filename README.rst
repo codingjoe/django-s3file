@@ -10,7 +10,7 @@ requests from large file uploads. This is particularly helpful for if
 you run your service on AWS Lambda or Heroku where you have a hard request
 limit.
 
-|PyPi Version| |Build Status| |Test Coverage| |GitHub license|
+|PyPi Version| |Test Coverage| |GitHub license|
 
 --------
 Features
@@ -183,8 +183,6 @@ uploaded to AWS S3 directly and not to your Django application server.
 
 .. |PyPi Version| image:: https://img.shields.io/pypi/v/django-s3file.svg
    :target: https://pypi.python.org/pypi/django-s3file/
-.. |Build Status| image:: https://travis-ci.org/codingjoe/django-s3file.svg?branch=master
-   :target: https://travis-ci.org/codingjoe/django-s3file
 .. |Test Coverage| image:: https://codecov.io/gh/codingjoe/django-s3file/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/codingjoe/django-s3file
 .. |GitHub license| image:: https://img.shields.io/badge/license-MIT-blue.svg
