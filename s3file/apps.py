@@ -9,9 +9,9 @@ class S3FileConfig(AppConfig):
     verbose_name = 'S3File'
 
     def ready(self):
+        from django import forms
         from django.core.files.storage import default_storage
         from storages.backends.s3boto3 import S3Boto3Storage
-        from django import forms
 
         from .forms import S3FileInputMixin
 
