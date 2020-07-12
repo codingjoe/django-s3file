@@ -1,9 +1,11 @@
-name: PyPi Release
+name: Release
 
-on: [release]
+on:
+  release:
+    types: [published]
 
 jobs:
-  build:
+  PyPi:
 
     runs-on: ubuntu-latest
     steps:
@@ -21,5 +23,5 @@ jobs:
     - name: Upload packages
       run: python -m twine upload dist/*
       env:
-        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
