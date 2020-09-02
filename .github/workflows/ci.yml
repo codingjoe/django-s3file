@@ -20,7 +20,7 @@ jobs:
   standardJS:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up Node
       uses: actions/setup-node@v1
     - name: Install Standard
@@ -48,20 +48,19 @@ jobs:
 
     - name: Install Chrome
       run: |
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
+        sudo apt update
+        sudo apt install -y google-chrome-stable
     - name: Install Selenium
       run: |
         mkdir bin
-        curl -O "https://chromedriver.storage.googleapis.com/$(curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip"
+        curl -qO "https://chromedriver.storage.googleapis.com/$(curl -q https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip"
         unzip chromedriver_linux64.zip -d bin
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip setuptools wheel codecov
-        pip install -e .[test]
-        pip install django==${{ matrix.django-version }}
+    - name: Upgrade Python setuptools
+      run: python -m pip install --upgrade pip setuptools wheel codecov
+    - name: Install Django version ${{ matrix.django-version }}
+      run: pip install django==${{ matrix.django-version }}
     - name: Run tests
-      run: PATH=$PATH:$(pwd)/bin py.test
+      run: PATH=$PATH:$(pwd)/bin python setup.py test
     - run: codecov
       env:
         CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
