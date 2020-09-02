@@ -17,6 +17,17 @@ jobs:
       - run: python setup.py sdist bdist_wheel
       - run: python -m twine check dist/*
 
+  standardJS:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Node
+      uses: actions/setup-node@v1
+    - name: Install Standard
+      run: npm install -g standard
+    - name: Run standard
+      run: standard
+
   pytest:
     runs-on: ubuntu-latest
     strategy:
