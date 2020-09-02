@@ -5,6 +5,7 @@ from contextlib import contextmanager
 import pytest
 from django.forms import ClearableFileInput
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import staleness_of
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -20,7 +21,7 @@ except ImportError:
 
 @contextmanager
 def wait_for_page_load(driver, timeout=30):
-    old_page = driver.find_element_by_tag_name('html')
+    old_page = driver.find_element(By.TAG_NAME, 'html')
     yield
     WebDriverWait(driver, timeout).until(
         staleness_of(old_page)
@@ -132,12 +133,12 @@ class TestS3FileInput:
         driver.get(live_server + self.url)
 
         with pytest.raises(NoSuchElementException):
-            error = driver.find_element_by_xpath('//body[@JSError]')
+            error = driver.find_element(By.XPATH, '//body[@JSError]')
             pytest.fail(error.get_attribute('JSError'))
 
     def test_file_insert(self, request, driver, live_server, upload_file, freeze):
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
+        file_input = driver.find_element(By.XPATH, '//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
         with wait_for_page_load(driver, timeout=10):
@@ -145,24 +146,24 @@ class TestS3FileInput:
         assert storage.exists('tmp/%s.txt' % request.node.name)
 
         with pytest.raises(NoSuchElementException):
-            error = driver.find_element_by_xpath('//body[@JSError]')
+            error = driver.find_element(By.XPATH, '//body[@JSError]')
             pytest.fail(error.get_attribute('JSError'))
 
     def test_file_insert_submit_value(self, driver, live_server, upload_file, freeze):
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
+        file_input = driver.find_element(By.XPATH, '//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
-        save_button = driver.find_element_by_xpath('//input[@name=\'save\']')
+        save_button = driver.find_element(By.XPATH, '//input[@name=\'save\']')
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
         assert 'save' in driver.page_source
 
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
+        file_input = driver.find_element(By.XPATH, '//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
-        save_button = driver.find_element_by_xpath('//button[@name=\'save_continue\']')
+        save_button = driver.find_element(By.XPATH, '//button[@name=\'save_continue\']')
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
         assert 'save_continue' in driver.page_source
@@ -170,35 +171,35 @@ class TestS3FileInput:
 
     def test_progress(self, driver, live_server, upload_file, freeze):
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
+        file_input = driver.find_element(By.XPATH, '//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
-        save_button = driver.find_element_by_xpath('//input[@name=\'save\']')
+        save_button = driver.find_element(By.XPATH, '//input[@name=\'save\']')
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
         assert 'save' in driver.page_source
 
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
+        file_input = driver.find_element(By.XPATH, '//input[@name=\'file\']')
         file_input.send_keys(upload_file)
         assert file_input.get_attribute('name') == 'file'
-        save_button = driver.find_element_by_xpath('//button[@name=\'save_continue\']')
+        save_button = driver.find_element(By.XPATH, '//button[@name=\'save_continue\']')
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
-        response = json.loads(driver.find_elements_by_css_selector('pre')[0].text)
+        response = json.loads(driver.find_elements(By.CSS_SELECTOR, 'pre')[0].text)
         assert response['POST']['progress'] == '1'
 
     def test_multi_file(self, driver, live_server, freeze,
                         upload_file, another_upload_file, yet_another_upload_file):
         driver.get(live_server + self.url)
-        file_input = driver.find_element_by_xpath('//input[@name=\'file\']')
+        file_input = driver.find_element(By.XPATH, '//input[@name=\'file\']')
         file_input.send_keys(' \n '.join([upload_file, another_upload_file]))
-        file_input = driver.find_element_by_xpath('//input[@name=\'other_file\']')
+        file_input = driver.find_element(By.XPATH, '//input[@name=\'other_file\']')
         file_input.send_keys(yet_another_upload_file)
-        save_button = driver.find_element_by_xpath('//input[@name=\'save\']')
+        save_button = driver.find_element(By.XPATH, '//input[@name=\'save\']')
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
-        response = json.loads(driver.find_elements_by_css_selector('pre')[0].text)
+        response = json.loads(driver.find_elements(By.CSS_SELECTOR, 'pre')[0].text)
         assert response['FILES'] == {
             'file': [
                 os.path.basename(upload_file),
