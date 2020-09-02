@@ -15,13 +15,17 @@ class FileEncoder(DjangoJSONEncoder):
 
 class ExampleFormView(generic.FormView):
     form_class = forms.UploadForm
-    template_name = 'form.html'
+    template_name = "form.html"
 
     def form_valid(self, form):
-        return JsonResponse({
-            'POST': self.request.POST,
-            'FILES': {
-                'file': self.request.FILES.getlist('file'),
-                'other_file': self.request.FILES.getlist('other_file'),
-            }
-        }, status=201, encoder=FileEncoder)
+        return JsonResponse(
+            {
+                "POST": self.request.POST,
+                "FILES": {
+                    "file": self.request.FILES.getlist("file"),
+                    "other_file": self.request.FILES.getlist("other_file"),
+                },
+            },
+            status=201,
+            encoder=FileEncoder,
+        )
