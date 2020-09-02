@@ -5,8 +5,8 @@ from .checks import storage_check
 
 
 class S3FileConfig(AppConfig):
-    name = 's3file'
-    verbose_name = 'S3File'
+    name = "s3file"
+    verbose_name = "S3File"
 
     def ready(self):
         from django import forms
@@ -15,14 +15,18 @@ class S3FileConfig(AppConfig):
 
         from .forms import S3FileInputMixin
 
-        if isinstance(default_storage, (S3Boto3Storage, FileSystemStorage)) and \
-                S3FileInputMixin not in forms.ClearableFileInput.__bases__:
-            forms.ClearableFileInput.__bases__ = \
-                (S3FileInputMixin,) + forms.ClearableFileInput.__bases__
+        if (
+            isinstance(default_storage, (S3Boto3Storage, FileSystemStorage))
+            and S3FileInputMixin not in forms.ClearableFileInput.__bases__
+        ):
+            forms.ClearableFileInput.__bases__ = (
+                S3FileInputMixin,
+            ) + forms.ClearableFileInput.__bases__
 
         elif S3FileInputMixin in forms.ClearableFileInput.__bases__:
             forms.ClearableFileInput.__bases__ = tuple(
-                cls for cls in forms.ClearableFileInput.__bases__
+                cls
+                for cls in forms.ClearableFileInput.__bases__
                 if cls is not S3FileInputMixin
             )
 

@@ -8,7 +8,7 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
 
-@pytest.yield_fixture(scope='session')
+@pytest.yield_fixture(scope="session")
 def driver():
     chrome_options = webdriver.ChromeOptions()
     chrome_options.headless = True
@@ -24,8 +24,8 @@ def driver():
 @pytest.fixture
 def upload_file(request):
     path = tempfile.mkdtemp()
-    file_name = os.path.join(path, '%s.txt' % request.node.name)
-    with open(file_name, 'w') as f:
+    file_name = os.path.join(path, "%s.txt" % request.node.name)
+    with open(file_name, "w") as f:
         f.write(request.node.name)
     return file_name
 
@@ -33,8 +33,8 @@ def upload_file(request):
 @pytest.fixture
 def another_upload_file(request):
     path = tempfile.mkdtemp()
-    file_name = os.path.join(path, 'another_%s.txt' % request.node.name)
-    with open(file_name, 'w') as f:
+    file_name = os.path.join(path, "another_%s.txt" % request.node.name)
+    with open(file_name, "w") as f:
         f.write(request.node.name)
     return file_name
 
@@ -42,8 +42,8 @@ def another_upload_file(request):
 @pytest.fixture
 def yet_another_upload_file(request):
     path = tempfile.mkdtemp()
-    file_name = os.path.join(path, 'yet_another_%s.txt' % request.node.name)
-    with open(file_name, 'w') as f:
+    file_name = os.path.join(path, "yet_another_%s.txt" % request.node.name)
+    with open(file_name, "w") as f:
         f.write(request.node.name)
     return file_name
 
@@ -53,5 +53,5 @@ def filemodel(request, db):
     from tests.testapp.models import FileModel
 
     return FileModel.objects.create(
-        file=ContentFile(request.node.name, '%s.txt' % request.node.name)
+        file=ContentFile(request.node.name, "%s.txt" % request.node.name)
     )

@@ -6,5 +6,5 @@ except ImportError:
 from . import views
 
 urlpatterns = [
-    path('', views.ExampleFormView.as_view(), name='upload'),
+    path("", views.ExampleFormView.as_view(), name="upload"),
 ]
