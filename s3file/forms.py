@@ -16,10 +16,10 @@ class S3FileInputMixin:
     """FileInput that uses JavaScript to directly upload to Amazon S3."""
 
     needs_multipart_form = False
-    upload_path = getattr(
+    upload_path = str(getattr(
         settings, 'S3FILE_UPLOAD_PATH', pathlib.PurePosixPath('tmp', 's3file')
-    )
-    upload_path = safe_join(storage.location, upload_path)
+    ))
+    upload_path = safe_join(str(storage.location), upload_path)
     expires = settings.SESSION_COOKIE_AGE
 
     @property
