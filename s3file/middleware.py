@@ -1,6 +1,6 @@
 import json
 import logging
-import os
+import pathlib
 
 from s3file.storages import local_dev, storage
 
@@ -28,11 +28,10 @@ class S3FileMiddleware:
     def get_files_from_storage(paths):
         """Return S3 file where the name does not include the path."""
         for path in paths:
-            if storage.location:
-                path = path.replace(os.path.dirname(storage.location) + "/", "", 1)
+            path = pathlib.PurePosixPath(path)
             try:
-                f = storage.open(path)
-                f.name = os.path.basename(path)
+                f = storage.open(path.relative_to(storage.location))
+                f.name = path.name
                 yield f
-            except OSError:
+            except (OSError, ValueError):
                 logger.exception("File not found: %s", path)

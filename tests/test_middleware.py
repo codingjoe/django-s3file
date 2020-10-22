@@ -1,3 +1,5 @@
+import os
+
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -11,7 +13,9 @@ class TestS3FileMiddleware:
         name = storage.save(
             "tmp/s3file/test_get_files_from_storage", ContentFile(content)
         )
-        files = S3FileMiddleware.get_files_from_storage([name])
+        files = S3FileMiddleware.get_files_from_storage(
+            [os.path.join(storage.location, name)]
+        )
         file = next(files)
         assert file.read() == content
 
