@@ -92,16 +92,23 @@ CORS policy
 You will need to allow ``POST`` from all origins. Just add the following
 to your CORS policy.
 
-.. code:: xml
+.. code:: json
 
-    <CORSConfiguration>
-        <CORSRule>
-            <AllowedOrigin>*</AllowedOrigin>
-            <AllowedMethod>POST</AllowedMethod>
-            <MaxAgeSeconds>3000</MaxAgeSeconds>
-            <AllowedHeader>*</AllowedHeader>
-        </CORSRule>
-    </CORSConfiguration>
+    [
+      {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "POST"
+        ],
+        "AllowedOrigins": [
+            "*"
+        ],
+        "ExposeHeaders": [],
+        "MaxAgeSeconds": 3000
+      }
+    ]
 
 Progress Bar
 ------------
