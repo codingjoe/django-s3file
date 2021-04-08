@@ -3,6 +3,8 @@ from storages.backends.s3boto3 import S3Boto3Storage
 
 class S3OptimizedUploadStorage(S3Boto3Storage):
     """
+    Class for an optimized S3 storage.
+
     This storage prevents unnecessary operation to copy with the general ``upload_fileobj``
     command when the object already is a S3 object where the faster copy command can be used.
 
