@@ -1,5 +1,4 @@
 import pytest
-
 from django.core.files.base import ContentFile
 
 from s3file import storages
