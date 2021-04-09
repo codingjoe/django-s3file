@@ -32,7 +32,7 @@ class S3OptimizedUploadStorage(S3Boto3Storage):
         # content.seek(0, os.SEEK_SET)  # Disable unnecessary seek operation
         # obj.upload_fileobj(content, ExtraArgs=params)  # Disable upload function
 
-        if not content.obj or not content.obj.key:
+        if not hasattr(content, "obj") or not hasattr(content.obj, "key"):
             raise RuntimeError(
                 "The content object must be a S3 object and contain a valid key."
             )
