@@ -25,6 +25,25 @@ class TestStorages:
         assert stored_object.copy_from_bucket == storage.bucket.name
         assert stored_object.copy_from_key == "tmp/s3file/s3_file.txt"
 
+    def test_post__save_optimized_gzip(self):
+        storage = storages.S3OptimizedMockStorage()
+        obj = storage.bucket.Object("tmp/s3file/s3_file.css")
+        storage.gzip = True
+
+        class Content:
+            def __init__(self, obj):
+                self.obj = obj
+
+        content = Content(obj)
+        key = storage._save("tmp/s3file/s3_file_copied.css", content)
+        stored_object = storage.created_objects[
+            "custom/location/tmp/s3file/s3_file_copied.css"
+        ]
+
+        assert key == "tmp/s3file/s3_file_copied.css"
+        assert stored_object.copy_from_bucket == storage.bucket.name
+        assert stored_object.copy_from_key == "tmp/s3file/s3_file.css"
+
     def test_post__save_optimized_fail(self):
         storage = storages.S3OptimizedMockStorage()
 

@@ -57,6 +57,9 @@ class S3MockStorage(FileSystemStorage):
 class S3OptimizedMockStorage(S3OptimizedUploadStorage):
     created_objects = {}
 
+    def _compress_content(self, content):
+        return content
+
     class bucket:
         name = "test-bucket"
 
