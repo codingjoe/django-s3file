@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage, default_storage
 from django.utils._os import safe_join
 
+from s3file.storages_optimized import S3OptimizedUploadStorage
+
 
 class S3MockStorage(FileSystemStorage):
     @property
@@ -50,6 +52,24 @@ class S3MockStorage(FileSystemStorage):
 
     class bucket:
         name = "test-bucket"
+
+
+class S3OptimizedMockStorage(S3OptimizedUploadStorage):
+    created_objects = {}
+
+    class bucket:
+        name = "test-bucket"
+
+        class Object:
+            def __init__(self, key):
+                self.key = key
+                self.copy_from_bucket = None
+                self.copy_from_key = None
+                S3OptimizedMockStorage.created_objects[self.key] = self
+
+            def copy(self, s3_object, ExtraArgs):
+                self.copy_from_bucket = s3_object["Bucket"]
+                self.copy_from_key = s3_object["Key"]
 
 
 local_dev = isinstance(default_storage, FileSystemStorage)
