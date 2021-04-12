@@ -8,7 +8,7 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def driver():
     chrome_options = webdriver.ChromeOptions()
     chrome_options.headless = True
