@@ -25,7 +25,7 @@ jobs:
           node-version: '14.x'
       - uses: actions/checkout@v2
       - id: cache-npm
-        uses: actions/cache@v2.1.4
+        uses: actions/cache@v2.1.5
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v2
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.4
+      - uses: actions/cache@v2.1.5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('linter-requirements.txt') }}
