@@ -2,4 +2,4 @@ bandit==1.7.0
 black==21.5b1
 flake8==3.9.2
 isort==5.8.0
-pydocstyle==6.0.0
+pydocstyle==6.1.1
