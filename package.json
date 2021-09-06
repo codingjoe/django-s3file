@@ -8,7 +8,8 @@
   "scripts": {
     "test": "standard",
     "postinstall": "uglifyjs --compress -o s3file/static/s3file/js/s3file.min.js s3file/static/s3file/js/s3file.js",
-    "minify": "uglifyjs --compress -o s3file/static/s3file/js/s3file.min.js s3file/static/s3file/js/s3file.js"
+    "minify": "uglifyjs --compress -o s3file/static/s3file/js/s3file.min.js s3file/static/s3file/js/s3file.js",
+    "lint:js": "standard"
   },
   "repository": {
     "type": "git",

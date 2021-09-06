@@ -88,14 +88,13 @@
       return request('POST', url, s3Form, fileInput, file, form)
     })
     Promise.all(promises).then(function (results) {
-      var keys = results.map(function (result) {
-        return parseURL(result)
+      results.forEach(function (result) {
+        var hiddenFileInput = document.createElement('input')
+        hiddenFileInput.type = 'hidden'
+        hiddenFileInput.name = name
+        hiddenFileInput.value = parseURL(result)
+        form.appendChild(hiddenFileInput)
       })
-      var hiddenFileInput = document.createElement('input')
-      hiddenFileInput.type = 'hidden'
-      hiddenFileInput.name = name
-      hiddenFileInput.value = JSON.stringify(keys)
-      form.appendChild(hiddenFileInput)
       fileInput.name = ''
       window.uploading -= 1
     }, function (err) {
@@ -120,13 +119,14 @@
     form.loaded = 0
     form.total = 0
     var inputs = Array.from(form.querySelectorAll('.s3file'))
-    var hiddenS3Input = document.createElement('input')
-    hiddenS3Input.type = 'hidden'
-    hiddenS3Input.name = 's3file'
-    form.appendChild(hiddenS3Input)
-    hiddenS3Input.value = JSON.stringify(inputs.map(function (input) {
-      return input.name
-    }))
+
+    inputs.forEach(function (input) {
+      var hiddenS3Input = document.createElement('input')
+      hiddenS3Input.type = 'hidden'
+      hiddenS3Input.name = 's3file'
+      hiddenS3Input.value = input.name
+      form.appendChild(hiddenS3Input)
+    })
     inputs.forEach(function (input) {
       window.uploading += 1
       uploadFiles(form, input, input.name)

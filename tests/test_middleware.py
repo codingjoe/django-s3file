@@ -30,13 +30,31 @@ class TestS3FileMiddleware:
         request = rf.post(
             "/",
             data={
-                "file": '["custom/location/tmp/s3file/s3_file.txt"]',
-                "s3file": '["file"]',
+                "file": "custom/location/tmp/s3file/s3_file.txt",
+                "s3file": "file",
             },
         )
         S3FileMiddleware(lambda x: None)(request)
         assert request.FILES.getlist("file")
         assert request.FILES.get("file").read() == b"s3file"
+
+    def test_process_request__multiple_files(self, rf):
+        storage.save("tmp/s3file/s3_file.txt", ContentFile(b"s3file"))
+        storage.save("tmp/s3file/s3_other_file.txt", ContentFile(b"other s3file"))
+        request = rf.post(
+            "/",
+            data={
+                "file": [
+                    "custom/location/tmp/s3file/s3_file.txt",
+                    "custom/location/tmp/s3file/s3_other_file.txt",
+                ],
+                "s3file": ["file", "other_file"],
+            },
+        )
+        S3FileMiddleware(lambda x: None)(request)
+        files = request.FILES.getlist("file")
+        assert files[0].read() == b"s3file"
+        assert files[1].read() == b"other s3file"
 
     def test_process_request__no_location(self, rf, settings):
         settings.AWS_LOCATION = ""
@@ -48,16 +66,14 @@ class TestS3FileMiddleware:
 
         storage.save("tmp/s3file/s3_file.txt", ContentFile(b"s3file"))
         request = rf.post(
-            "/", data={"file": '["tmp/s3file/s3_file.txt"]', "s3file": '["file"]'}
+            "/", data={"file": "tmp/s3file/s3_file.txt", "s3file": "file"}
         )
         S3FileMiddleware(lambda x: None)(request)
         assert request.FILES.getlist("file")
         assert request.FILES.get("file").read() == b"s3file"
 
     def test_process_request__no_file(self, rf, caplog):
-        request = rf.post(
-            "/", data={"file": '["does_not_exist.txt"]', "s3file": '["file"]'}
-        )
+        request = rf.post("/", data={"file": "does_not_exist.txt", "s3file": "file"})
         S3FileMiddleware(lambda x: None)(request)
         assert not request.FILES.getlist("file")
         assert "File not found: does_not_exist.txt" in caplog.text
