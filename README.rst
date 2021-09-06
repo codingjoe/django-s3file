@@ -200,13 +200,14 @@ Using optimized S3Boto3Storage
 ------------------------------
 
 Since ``S3Boto3Storage`` supports storing data from any other fileobj, 
-it uses a very general ``_save`` function. This leads to the 
-frontend uploading the file to S3 to then move it byte-by-byte. 
-For large files this leads to additional loading times for the user.
+it uses a generalized ``_save`` function. This leads to the frontend uploading 
+the file to S3 and then copying it byte-by-byte to perform a move operation just 
+to rename the uploaded object. For large files this leads to additional loading 
+times for the user. 
 
 That's why S3File provides an optimized version of this method at 
 ``storages_optimized.S3OptimizedUploadStorage``. It uses the more efficient 
-``copy`` given that we know that we only copy from one S3 location to another.
+``copy`` method from S3, given that we know that we only copy from one S3 location to another.
 
 .. code:: python
 

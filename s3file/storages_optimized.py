@@ -33,7 +33,7 @@ class S3OptimizedUploadStorage(S3Boto3Storage):
         # obj.upload_fileobj(content, ExtraArgs=params)  # Disable upload function
 
         if not hasattr(content, "obj") or not hasattr(content.obj, "key"):
-            raise RuntimeError(
+            raise TypeError(
                 "The content object must be a S3 object and contain a valid key."
             )
 
