@@ -195,3 +195,23 @@ uploaded to AWS S3 directly and not to your Django application server.
    :target: https://codecov.io/gh/codingjoe/django-s3file
 .. |GitHub license| image:: https://img.shields.io/badge/license-MIT-blue.svg
    :target: https://raw.githubusercontent.com/codingjoe/django-s3file/master/LICENSE
+
+Using optimized S3Boto3Storage
+------------------------------
+
+Since ``S3Boto3Storage`` supports storing data from any other fileobj, 
+it uses a generalized ``_save`` function. This leads to the frontend uploading 
+the file to S3 and then copying it byte-by-byte to perform a move operation just 
+to rename the uploaded object. For large files this leads to additional loading 
+times for the user. 
+
+That's why S3File provides an optimized version of this method at 
+``storages_optimized.S3OptimizedUploadStorage``. It uses the more efficient 
+``copy`` method from S3, given that we know that we only copy from one S3 location to another.
+
+.. code:: python
+
+    from s3file.storages_optimized import S3OptimizedUploadStorage
+
+    class MyStorage(S3OptimizedUploadStorage):  # Subclass and use like any other storage
+        default_acl = 'private'
