@@ -21,7 +21,6 @@
     file.loaded = 0
     return new Promise(function (resolve, reject) {
       var xhr = new window.XMLHttpRequest()
-      xhr.open(method, url)
 
       xhr.onload = function () {
         if (xhr.status === 201) {
@@ -62,6 +61,7 @@
         reject(xhr.statusText)
       }
 
+      xhr.open(method, url)
       xhr.send(data)
     })
   }
