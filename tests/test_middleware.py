@@ -14,7 +14,7 @@ class TestS3FileMiddleware:
             "tmp/s3file/test_get_files_from_storage", ContentFile(content)
         )
         files = S3FileMiddleware.get_files_from_storage(
-            [os.path.join(storage.location, name)]
+            [os.path.join(storage.aws_location, name)]
         )
         file = next(files)
         assert file.read() == content

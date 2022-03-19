@@ -36,10 +36,11 @@ class TestS3FileInput:
         """Freeze datetime and UUID."""
         monkeypatch.setattr(
             "s3file.forms.S3FileInputMixin.upload_folder",
-            os.path.join(storage.location, "tmp"),
+            os.path.join(storage.aws_location, "tmp"),
         )
 
     def test_value_from_datadict(self, client, upload_file):
+        print(storage.location)
         with open(upload_file) as f:
             uploaded_file = storage.save("test.jpg", f)
         response = client.post(
@@ -227,7 +228,5 @@ class TestS3FileInput:
         assert ClearableFileInput().media._js == ["s3file/js/s3file.js"]
 
     def test_upload_folder(self):
-        assert ClearableFileInput().upload_folder.startswith(
-            "custom/location/tmp/s3file/"
-        )
-        assert len(ClearableFileInput().upload_folder) == 49
+        assert "custom/location/tmp/s3file/" in ClearableFileInput().upload_folder
+        assert len(os.path.basename(ClearableFileInput().upload_folder)) == 22
