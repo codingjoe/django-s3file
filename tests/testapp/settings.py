@@ -44,7 +44,7 @@ TEMPLATES = [
     },
 ]
 
-USE_L10N = True
+USE_TZ = True
 
 AWS_ACCESS_KEY_ID = "testaccessid"
 AWS_SECRET_ACCESS_KEY = "supersecretkey"

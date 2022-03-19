@@ -29,7 +29,11 @@ class S3FileMiddleware:
         for path in paths:
             path = pathlib.PurePosixPath(path)
             try:
-                f = storage.open(str(path.relative_to(storage.location)))
+                location = storage.aws_location
+            except AttributeError:
+                location = storage.location
+            try:
+                f = storage.open(str(path.relative_to(location)))
                 f.name = path.name
                 yield f
             except (OSError, ValueError):
