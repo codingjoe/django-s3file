@@ -7,7 +7,7 @@ name = "django-s3file"
 authors = [
     { name = "Johannes Maron", email = "johannes@maron.family" }
 ]
-readme = "README.rst"
+readme = "README.md"
 license = { file = "LICENSE" }
 dynamic = ["version", "description"]
 classifiers = [
