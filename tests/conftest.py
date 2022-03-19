@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 from django.core.files.base import ContentFile
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
@@ -15,7 +15,7 @@ def driver():
     try:
         b = webdriver.Chrome(options=chrome_options)
     except WebDriverException as e:
-        pytest.skip(force_text(e))
+        pytest.skip(force_str(e))
     else:
         yield b
         b.quit()
