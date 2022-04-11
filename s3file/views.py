@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import logging
+from pathlib import Path
 
 from django import http
 from django.conf import settings

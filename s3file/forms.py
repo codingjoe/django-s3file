@@ -4,6 +4,7 @@ import pathlib
 import uuid
 
 from django.conf import settings
+from django.core import signing
 from django.utils.functional import cached_property
 from storages.utils import safe_join
 
@@ -16,10 +17,14 @@ class S3FileInputMixin:
     """FileInput that uses JavaScript to directly upload to Amazon S3."""
 
     needs_multipart_form = False
-    upload_path = str(
-        getattr(settings, "S3FILE_UPLOAD_PATH", pathlib.PurePosixPath("tmp", "s3file"))
+    upload_path = safe_join(
+        str(storage.aws_location),
+        str(
+            getattr(
+                settings, "S3FILE_UPLOAD_PATH", pathlib.PurePosixPath("tmp", "s3file")
+            )
+        ),
     )
-    upload_path = safe_join(str(storage.location), upload_path)
     expires = settings.SESSION_COOKIE_AGE
 
     @property
@@ -45,6 +50,11 @@ class S3FileInputMixin:
             "data-fields-%s" % key: value for key, value in response["fields"].items()
         }
         defaults["data-url"] = response["url"]
+        signer = signing.Signer(
+            salt=f"{S3FileInputMixin.__module__}.{S3FileInputMixin.__name__}"
+        )
+        print(self.upload_folder)
+        defaults["data-s3f-signature"] = signer.signature(self.upload_folder)
         defaults.update(attrs)
 
         try:

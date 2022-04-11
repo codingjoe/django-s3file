@@ -31,23 +31,15 @@ class TestS3FileInput:
     def url(self):
         return reverse("upload")
 
-    @pytest.fixture
-    def freeze(self, monkeypatch):
-        """Freeze datetime and UUID."""
-        monkeypatch.setattr(
-            "s3file.forms.S3FileInputMixin.upload_folder",
-            os.path.join(storage.aws_location, "tmp"),
-        )
-
-    def test_value_from_datadict(self, client, upload_file):
-        print(storage.location)
+    def test_value_from_datadict(self, freeze_upload_folder, client, upload_file):
         with open(upload_file) as f:
-            uploaded_file = storage.save("test.jpg", f)
+            uploaded_file = storage.save(freeze_upload_folder / "test.jpg", f)
         response = client.post(
             reverse("upload"),
             {
-                "file": json.dumps([uploaded_file]),
-                "s3file": '["file"]',
+                "file": f"custom/location/{uploaded_file}",
+                "file-s3f-signature": "m94qBxBsnMIuIICiY133kX18KkllSPMVbhGAdAwNn1A",
+                "s3file": "file",
             },
         )
 
@@ -82,7 +74,7 @@ class TestS3FileInput:
         assert form.is_valid()
         assert not form.cleaned_data["file"]
 
-    def test_build_attr(self):
+    def test_build_attr(self, freeze_upload_folder):
         assert set(ClearableFileInput().build_attrs({}).keys()) == {
             "class",
             "data-url",
@@ -92,21 +84,26 @@ class TestS3FileInput:
             "data-fields-x-amz-credential",
             "data-fields-policy",
             "data-fields-key",
+            "data-s3f-signature",
         }
+        assert (
+            ClearableFileInput().build_attrs({})["data-s3f-signature"]
+            == "tFV9nGZlq9WX1I5Sotit18z1f4C_3lPnj33_zo4LZRc"
+        )
         assert ClearableFileInput().build_attrs({})["class"] == "s3file"
         assert (
             ClearableFileInput().build_attrs({"class": "my-class"})["class"]
             == "my-class s3file"
         )
 
-    def test_get_conditions(self, freeze):
+    def test_get_conditions(self, freeze_upload_folder):
         conditions = ClearableFileInput().get_conditions(None)
         assert all(
             condition in conditions
             for condition in [
                 {"bucket": "test-bucket"},
                 {"success_action_status": "201"},
-                ["starts-with", "$key", "custom/location/tmp"],
+                ["starts-with", "$key", "custom/location/tmp/s3file"],
                 ["starts-with", "$Content-Type", ""],
             ]
         ), conditions
@@ -145,20 +142,24 @@ class TestS3FileInput:
             error = driver.find_element(By.XPATH, "//body[@JSError]")
             pytest.fail(error.get_attribute("JSError"))
 
-    def test_file_insert(self, request, driver, live_server, upload_file, freeze):
+    def test_file_insert(
+        self, request, driver, live_server, upload_file, freeze_upload_folder
+    ):
         driver.get(live_server + self.url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(upload_file)
         assert file_input.get_attribute("name") == "file"
         with wait_for_page_load(driver, timeout=10):
             file_input.submit()
-        assert storage.exists("tmp/%s.txt" % request.node.name)
+        assert storage.exists("tmp/s3file/%s.txt" % request.node.name)
 
         with pytest.raises(NoSuchElementException):
             error = driver.find_element(By.XPATH, "//body[@JSError]")
             pytest.fail(error.get_attribute("JSError"))
 
-    def test_file_insert_submit_value(self, driver, live_server, upload_file, freeze):
+    def test_file_insert_submit_value(
+        self, driver, live_server, upload_file, freeze_upload_folder
+    ):
         driver.get(live_server + self.url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(upload_file)
@@ -178,7 +179,7 @@ class TestS3FileInput:
         assert "save_continue" in driver.page_source
         assert "continue_value" in driver.page_source
 
-    def test_progress(self, driver, live_server, upload_file, freeze):
+    def test_progress(self, driver, live_server, upload_file, freeze_upload_folder):
         driver.get(live_server + self.url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(upload_file)
@@ -202,16 +203,23 @@ class TestS3FileInput:
         self,
         driver,
         live_server,
-        freeze,
+        freeze_upload_folder,
         upload_file,
         another_upload_file,
         yet_another_upload_file,
     ):
         driver.get(live_server + self.url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(" \n ".join([upload_file, another_upload_file]))
+        file_input.send_keys(
+            " \n ".join(
+                [
+                    str(freeze_upload_folder / upload_file),
+                    str(freeze_upload_folder / another_upload_file),
+                ]
+            )
+        )
         file_input = driver.find_element(By.XPATH, "//input[@name='other_file']")
-        file_input.send_keys(yet_another_upload_file)
+        file_input.send_keys(str(freeze_upload_folder / yet_another_upload_file))
         save_button = driver.find_element(By.XPATH, "//input[@name='save']")
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
