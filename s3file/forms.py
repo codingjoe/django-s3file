@@ -4,10 +4,10 @@ import pathlib
 import uuid
 
 from django.conf import settings
-from django.core import signing
 from django.utils.functional import cached_property
 from storages.utils import safe_join
 
+from s3file.middleware import S3FileMiddleware
 from s3file.storages import storage
 
 logger = logging.getLogger("s3file")
@@ -50,11 +50,10 @@ class S3FileInputMixin:
             "data-fields-%s" % key: value for key, value in response["fields"].items()
         }
         defaults["data-url"] = response["url"]
-        signer = signing.Signer(
-            salt=f"{S3FileInputMixin.__module__}.{S3FileInputMixin.__name__}"
+        # we sign upload location, and will only accept files within the same folder
+        defaults["data-s3f-signature"] = S3FileMiddleware.sign_s3_key_prefix(
+            self.upload_folder
         )
-        print(self.upload_folder)
-        defaults["data-s3f-signature"] = signer.signature(self.upload_folder)
         defaults.update(attrs)
 
         try:

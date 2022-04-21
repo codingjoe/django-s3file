@@ -6,7 +6,6 @@ from django.core.exceptions import PermissionDenied, SuspiciousFileOperation
 from django.utils.crypto import constant_time_compare
 
 from . import views
-from .forms import S3FileInputMixin
 from .storages import local_dev, storage
 
 logger = logging.getLogger("s3file")
@@ -38,21 +37,18 @@ class S3FileMiddleware:
 
         return self.get_response(request)
 
-    @staticmethod
-    def get_files_from_storage(paths, signature):
+    @classmethod
+    def get_files_from_storage(cls, paths, signature):
         """Return S3 file where the name does not include the path."""
         try:
             location = storage.aws_location
         except AttributeError:
             location = storage.location
-        signer = signing.Signer(
-            salt=f"{S3FileInputMixin.__module__}.{S3FileInputMixin.__name__}"
-        )
         for path in paths:
             path = pathlib.PurePosixPath(path)
-            print(path)
-            print(signer.signature(path.parent), signature)
-            if not constant_time_compare(signer.signature(path.parent), signature):
+            if not constant_time_compare(
+                cls.sign_s3_key_prefix(path.parent), signature
+            ):
                 raise PermissionDenied("Illegal signature!")
             try:
                 relative_path = str(path.relative_to(location))
@@ -67,3 +63,12 @@ class S3FileMiddleware:
                 yield f
             except (OSError, ValueError):
                 logger.exception("File not found: %s", path)
+
+    @classmethod
+    def sign_s3_key_prefix(cls, path):
+        """
+        Signature to validate the S3 keys passed the middleware before fetching files.
+
+        Return a base64-encoded HMAC-SHA256 of the upload folder aka the S3 key-prefix.
+        """
+        return signing.Signer(salt="s3file.middleware.S3FileMiddleware").signature(path)

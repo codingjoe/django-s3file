@@ -38,7 +38,7 @@ class TestS3FileInput:
             reverse("upload"),
             {
                 "file": f"custom/location/{uploaded_file}",
-                "file-s3f-signature": "m94qBxBsnMIuIICiY133kX18KkllSPMVbhGAdAwNn1A",
+                "file-s3f-signature": "FxQXie3wnVnCUFqGzFZ8DCFKAXFA3bnQ8tE96U11o80",
                 "s3file": "file",
             },
         )
@@ -88,7 +88,7 @@ class TestS3FileInput:
         }
         assert (
             ClearableFileInput().build_attrs({})["data-s3f-signature"]
-            == "tFV9nGZlq9WX1I5Sotit18z1f4C_3lPnj33_zo4LZRc"
+            == "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI"
         )
         assert ClearableFileInput().build_attrs({})["class"] == "s3file"
         assert (

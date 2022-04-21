@@ -25,7 +25,7 @@ def driver():
 
 @pytest.fixture
 def freeze_upload_folder(monkeypatch):
-    """Freeze datetime and UUID."""
+    """Freeze the upload folder which by default contains a random UUID v4."""
     upload_folder = Path(storage.aws_location) / "tmp" / "s3file"
     monkeypatch.setattr(
         "s3file.forms.S3FileInputMixin.upload_folder",

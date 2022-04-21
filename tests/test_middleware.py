@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from django.core.exceptions import PermissionDenied, SuspiciousFileOperation
+from django.core.exceptions import PermissionDenied
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -17,7 +17,7 @@ class TestS3FileMiddleware:
         )
         files = S3FileMiddleware.get_files_from_storage(
             [os.path.join(storage.aws_location, name)],
-            "tFV9nGZlq9WX1I5Sotit18z1f4C_3lPnj33_zo4LZRc",
+            "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
         )
         file = next(files)
         assert file.read() == content
@@ -35,7 +35,7 @@ class TestS3FileMiddleware:
             data={
                 "file": "custom/location/tmp/s3file/s3_file.txt",
                 "s3file": "file",
-                "file-s3f-signature": "tFV9nGZlq9WX1I5Sotit18z1f4C_3lPnj33_zo4LZRc",
+                "file-s3f-signature": "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
             },
         )
         S3FileMiddleware(lambda x: None)(request)
@@ -49,7 +49,7 @@ class TestS3FileMiddleware:
             data={
                 "file": "custom/location/secrets/passwords.txt",
                 "s3file": "file",
-                "file-s3f-signature": "tFV9nGZlq9WX1I5Sotit18z1f4C_3lPnj33_zo4LZRc",
+                "file-s3f-signature": "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
             },
         )
         with pytest.raises(PermissionDenied) as e:
@@ -66,8 +66,8 @@ class TestS3FileMiddleware:
                     "custom/location/tmp/s3file/s3_file.txt",
                     "custom/location/tmp/s3file/s3_other_file.txt",
                 ],
-                "file-s3f-signature": "tFV9nGZlq9WX1I5Sotit18z1f4C_3lPnj33_zo4LZRc",
-                "other_file-s3f-signature": "tFV9nGZlq9WX1I5Sotit18z1f4C_3lPnj33_zo4LZRc",
+                "file-s3f-signature": "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
+                "other_file-s3f-signature": "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
                 "s3file": ["file", "other_file"],
             },
         )
@@ -88,9 +88,9 @@ class TestS3FileMiddleware:
         request = rf.post(
             "/",
             data={
-                "file": f"tmp/s3file/s3_file.txt",
+                "file": "tmp/s3file/s3_file.txt",
                 "s3file": "file",
-                "file-s3f-signature": "scjzm3N8njBQIVSGEhOchtM0TkGyb2U6OXGLVlRUZhY",
+                "file-s3f-signature": "pJYaM4x7RzLDLVXWuphK2dMqqc0oLr_jZFasfGU7BhU",
             },
         )
         S3FileMiddleware(lambda x: None)(request)
@@ -103,7 +103,7 @@ class TestS3FileMiddleware:
             data={
                 "file": "custom/location/tmp/s3file/does_not_exist.txt",
                 "s3file": "file",
-                "file-s3f-signature": "tFV9nGZlq9WX1I5Sotit18z1f4C_3lPnj33_zo4LZRc",
+                "file-s3f-signature": "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
             },
         )
         S3FileMiddleware(lambda x: None)(request)
@@ -119,6 +119,7 @@ class TestS3FileMiddleware:
         )
         with pytest.raises(PermissionDenied) as e:
             S3FileMiddleware(lambda x: None)(request)
+        assert "No signature provided." in str(e.value)
 
     def test_process_request__wrong_signature(self, rf, caplog):
         request = rf.post(
@@ -131,3 +132,10 @@ class TestS3FileMiddleware:
         )
         with pytest.raises(PermissionDenied) as e:
             S3FileMiddleware(lambda x: None)(request)
+        assert "Illegal signature!" in str(e.value)
+
+    def test_sign_s3_key_prefix(self, rf):
+        assert (
+            S3FileMiddleware.sign_s3_key_prefix("test/test")
+            == "a8KINhIf1IpSD5sgdXE4wEQodZorq_8CmwkqZ5V6nr4"
+        )

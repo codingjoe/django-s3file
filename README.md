@@ -29,10 +29,16 @@ license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubu
 sequenceDiagram
     autonumber
     actor Browser
+    participant S3
+    participant Middleware
+    Browser->>Django: GET form view
+    activate Django
+    Django->>Browser: RESPONSE w/ presigned POST URL & signed middleware key
+    deactivate Django
     Browser->>S3: POST large file
     activate S3
     S3->>Browser: RESPONSE AWS S3 key
-    Browser->>Middleware: POST AWS S3 key
+    Browser->>Middleware: POST AWS S3 key (signed)
     activate Middleware
     Middleware->>S3: GET AWS S3 key
     S3->>Middleware: RESPONSE large file promise
