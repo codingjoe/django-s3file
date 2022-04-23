@@ -94,12 +94,6 @@
         hiddenFileInput.name = name
         hiddenFileInput.value = parseURL(result)
         form.appendChild(hiddenFileInput)
-        var hiddenSignatureInput = document.createElement('input')
-        hiddenSignatureInput.type = 'hidden'
-        hiddenSignatureInput.name = name + '-s3f-signature'
-        console.log(fileInput.dataset.s3fSignature)
-        hiddenSignatureInput.value = fileInput.dataset.s3fSignature
-        form.appendChild(hiddenSignatureInput)
       })
       fileInput.name = ''
       window.uploading -= 1
@@ -132,6 +126,11 @@
       hiddenS3Input.name = 's3file'
       hiddenS3Input.value = input.name
       form.appendChild(hiddenS3Input)
+      var hiddenSignatureInput = document.createElement('input')
+      hiddenSignatureInput.type = 'hidden'
+      hiddenSignatureInput.name = input.name + '-s3f-signature'
+      hiddenSignatureInput.value = input.dataset.s3fSignature
+      form.appendChild(hiddenSignatureInput)
     })
     inputs.forEach(function (input) {
       window.uploading += 1
