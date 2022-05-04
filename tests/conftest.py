@@ -7,7 +7,7 @@ from django.utils.encoding import force_str
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
-from s3file.storages import storage
+from s3file.storages import get_aws_location
 
 
 @pytest.fixture(scope="session")
@@ -26,7 +26,7 @@ def driver():
 @pytest.fixture
 def freeze_upload_folder(monkeypatch):
     """Freeze the upload folder which by default contains a random UUID v4."""
-    upload_folder = Path(storage.aws_location) / "tmp" / "s3file"
+    upload_folder = Path(get_aws_location()) / "tmp" / "s3file"
     monkeypatch.setattr(
         "s3file.forms.S3FileInputMixin.upload_folder",
         str(upload_folder),

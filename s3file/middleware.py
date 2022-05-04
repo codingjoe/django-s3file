@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied, SuspiciousFileOperation
 from django.utils.crypto import constant_time_compare
 
 from . import views
-from .storages import local_dev, storage
+from .storages import get_aws_location, local_dev, storage
 
 logger = logging.getLogger("s3file")
 
@@ -40,10 +40,7 @@ class S3FileMiddleware:
     @classmethod
     def get_files_from_storage(cls, paths, signature):
         """Return S3 file where the name does not include the path."""
-        try:
-            location = storage.aws_location
-        except AttributeError:
-            location = storage.location
+        location = get_aws_location()
         for path in paths:
             path = pathlib.PurePosixPath(path)
             if not constant_time_compare(
@@ -54,7 +51,7 @@ class S3FileMiddleware:
                 relative_path = str(path.relative_to(location))
             except ValueError as e:
                 raise SuspiciousFileOperation(
-                    f"Path is not inside the designated upload location: {path}"
+                    f"Path is outside the storage location: {path}"
                 ) from e
 
             try:

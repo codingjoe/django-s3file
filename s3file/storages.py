@@ -11,12 +11,8 @@ from django.utils._os import safe_join
 
 class S3MockStorage(FileSystemStorage):
     @property
-    def aws_location(self):
-        return getattr(settings, "AWS_LOCATION", "")
-
-    @property
     def location(self):
-        return safe_join(os.path.abspath(self.base_location), self.aws_location)
+        return safe_join(os.path.abspath(self.base_location), get_aws_location())
 
     class connection:
         class meta:
@@ -56,3 +52,7 @@ class S3MockStorage(FileSystemStorage):
 local_dev = isinstance(default_storage, FileSystemStorage)
 
 storage = default_storage if not local_dev else S3MockStorage()
+
+
+def get_aws_location():
+    return getattr(settings, "AWS_LOCATION", "")

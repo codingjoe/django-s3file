@@ -12,7 +12,8 @@ We use [pre-signed POST URLs](s3-pre-signed-url) to upload files to AWS S3.
 it before fetching files from S3.
 
 Please note, that Django's signer uses the `SECRET_KEY`, rotating the key will void all
-signatures.
+signatures. Should you rotate the secret key, between a form GET and POST request, the
+form will fail. Similarly, Django will expire all sessions if you rotate the key.
 
 [s3-pre-signed-url]: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-presigned-urls.html
 [django-signing]: https://docs.djangoproject.com/en/stable/topics/signing/

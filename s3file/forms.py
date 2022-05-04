@@ -8,7 +8,7 @@ from django.utils.functional import cached_property
 from storages.utils import safe_join
 
 from s3file.middleware import S3FileMiddleware
-from s3file.storages import storage
+from s3file.storages import get_aws_location, storage
 
 logger = logging.getLogger("s3file")
 
@@ -18,7 +18,7 @@ class S3FileInputMixin:
 
     needs_multipart_form = False
     upload_path = safe_join(
-        str(storage.aws_location),
+        str(get_aws_location()),
         str(
             getattr(
                 settings, "S3FILE_UPLOAD_PATH", pathlib.PurePosixPath("tmp", "s3file")

@@ -6,7 +6,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from s3file.middleware import S3FileMiddleware
-from s3file.storages import storage
+from s3file.storages import get_aws_location, storage
 
 
 class TestS3FileMiddleware:
@@ -16,7 +16,7 @@ class TestS3FileMiddleware:
             "tmp/s3file/test_get_files_from_storage", ContentFile(content)
         )
         files = S3FileMiddleware.get_files_from_storage(
-            [os.path.join(storage.aws_location, name)],
+            [os.path.join(get_aws_location(), name)],
             "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
         )
         file = next(files)
