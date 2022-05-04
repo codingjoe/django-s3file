@@ -29,7 +29,7 @@ processing them.
 
 ### Request file injection
 
-Tho files can always be included in a request, CVE-2022-24840 revealed that we need
+Though files can always be included in a request, CVE-2022-24840 revealed that we need
 to consider people injecting any files that reside on your S3 bucket. However, we do
 presign the upload location and validate it before fetching files from S3.
 
