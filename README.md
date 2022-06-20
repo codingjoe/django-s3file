@@ -11,9 +11,9 @@ request limit.
 [![PyPi
 Version](https://img.shields.io/pypi/v/django-s3file.svg)](https://pypi.python.org/pypi/django-s3file/)
 [![Test
-Coverage](https://codecov.io/gh/codingjoe/django-s3file/branch/master/graph/badge.svg)](https://codecov.io/gh/codingjoe/django-s3file)
+Coverage](https://codecov.io/gh/codingjoe/django-s3file/branch/main/graph/badge.svg)](https://codecov.io/gh/codingjoe/django-s3file)
 [![GitHub
-license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/codingjoe/django-s3file/master/LICENSE)
+license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/codingjoe/django-s3file/main/LICENSE)
 
 ## Features
 
