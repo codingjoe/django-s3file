@@ -105,7 +105,7 @@
   }
 
   function clickSubmit (e) {
-    var submitButton = e.target
+    var submitButton = e.currentTarget
     var form = submitButton.closest('form')
     var submitInput = document.createElement('input')
     submitInput.type = 'hidden'
