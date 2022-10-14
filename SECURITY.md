@@ -42,8 +42,13 @@ not escape and access any files but the one uploaded by the attacker.
 
 ## Reporting a Vulnerability
 
-NEVER open an issue or discussion to report a vulnerability. Please contact one of the
-maintainers of the project either via email or Telegram:
+NEVER open an issue or discussion to report a vulnerability.
+
+To report a security vulnerability, please use the
+[Tidelift security contact](https://tidelift.com/security).
+Tidelift will coordinate the fix and disclosure.
+
+You may also contact one of the maintainers of the project either via email or Telegram:
 
 * Email: [johannes@maron.family](mailto:johannes@maron.family)
 * Telegram: [@codingjoe](https://t.me/codingjoe)
