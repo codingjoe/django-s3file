@@ -10,7 +10,7 @@ class FileEncoder(DjangoJSONEncoder):
     def default(self, o):
         if isinstance(o, File):
             return o.name
-        super().default(o)
+        return super().default(o)
 
 
 class ExampleFormView(generic.FormView):
