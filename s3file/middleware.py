@@ -18,7 +18,6 @@ class S3FileMiddleware:
     def __call__(self, request):
         file_fields = request.POST.getlist("s3file")
         for field_name in file_fields:
-
             paths = request.POST.getlist(field_name)
             if paths:
                 try:

@@ -39,7 +39,6 @@ class TestS3MockView:
         assert response.status_code == http.HTTPStatus.CREATED
 
     def test_post__bad_signature(self, client, upload_file):
-
         bad_signature = base64.b64encode(
             hmac.new(b"eve", (self.policy + self.date).encode(), "sha256").digest()
         ).decode()
