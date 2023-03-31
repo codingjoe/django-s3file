@@ -1,4 +1,5 @@
 from storages.backends.s3boto3 import S3Boto3Storage
+from storages.utils import clean_name
 
 
 class S3OptimizedUploadStorage(S3Boto3Storage):
@@ -16,7 +17,7 @@ class S3OptimizedUploadStorage(S3Boto3Storage):
     def _save(self, name, content):
         # Basically copy the implementation of _save of S3Boto3Storage
         # and replace the obj.upload_fileobj with a copy function
-        cleaned_name = self._clean_name(name)
+        cleaned_name = clean_name(name)
         name = self._normalize_name(cleaned_name)
         params = self._get_write_parameters(name, content)
 
