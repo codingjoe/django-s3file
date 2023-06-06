@@ -29,3 +29,21 @@ class ExampleFormView(generic.FormView):
             status=201,
             encoder=FileEncoder,
         )
+
+
+class MultiExampleFormView(generic.FormView):
+    form_class = forms.MultiUploadForm
+    template_name = "form.html"
+
+    def form_valid(self, form):
+        return JsonResponse(
+            {
+                "POST": self.request.POST,
+                "FILES": {
+                    "file": self.request.FILES.getlist("file"),
+                    "other_file": self.request.FILES.getlist("other_file"),
+                },
+            },
+            status=201,
+            encoder=FileEncoder,
+        )
