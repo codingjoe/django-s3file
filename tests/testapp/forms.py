@@ -10,10 +10,14 @@ if S3FileInputMixin not in forms.ClearableFileInput.__bases__:
     ) + forms.ClearableFileInput.__bases__
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
 class UploadForm(forms.ModelForm):
     class Meta:
         model = FileModel
         fields = ("file", "other_file")
         widgets = {
-            "file": forms.ClearableFileInput(attrs={"multiple": True}),
+            "file": MultipleFileInput(attrs={"multiple": True}),
         }
