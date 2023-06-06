@@ -10,10 +10,14 @@ from selenium.common.exceptions import WebDriverException
 from s3file.storages import get_aws_location
 
 
+def pytest_configure(config):
+    config.addinivalue_line("markers", "selenium: skip if selenium is not installed")
+
+
 @pytest.fixture(scope="session")
 def driver():
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.headless = True
+    chrome_options.add_argument("--headless=new")
     try:
         b = webdriver.Chrome(options=chrome_options)
     except WebDriverException as e:

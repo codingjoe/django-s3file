@@ -135,6 +135,7 @@ class TestS3FileInput:
             "application/pdf,image/*"
         )
 
+    @pytest.mark.selenium
     def test_no_js_error(self, driver, live_server):
         driver.get(live_server + self.url)
 
@@ -142,6 +143,7 @@ class TestS3FileInput:
             error = driver.find_element(By.XPATH, "//body[@JSError]")
             pytest.fail(error.get_attribute("JSError"))
 
+    @pytest.mark.selenium
     def test_file_insert(
         self, request, driver, live_server, upload_file, freeze_upload_folder
     ):
@@ -157,6 +159,7 @@ class TestS3FileInput:
             error = driver.find_element(By.XPATH, "//body[@JSError]")
             pytest.fail(error.get_attribute("JSError"))
 
+    @pytest.mark.selenium
     def test_file_insert_submit_value(
         self, driver, live_server, upload_file, freeze_upload_folder
     ):
@@ -179,6 +182,7 @@ class TestS3FileInput:
         assert "save_continue" in driver.page_source
         assert "continue_value" in driver.page_source
 
+    @pytest.mark.selenium
     def test_progress(self, driver, live_server, upload_file, freeze_upload_folder):
         driver.get(live_server + self.url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
@@ -199,6 +203,7 @@ class TestS3FileInput:
         response = json.loads(driver.find_elements(By.CSS_SELECTOR, "pre")[0].text)
         assert response["POST"]["progress"] == "1"
 
+    @pytest.mark.selenium
     def test_multi_file(
         self,
         driver,
@@ -208,7 +213,7 @@ class TestS3FileInput:
         another_upload_file,
         yet_another_upload_file,
     ):
-        driver.get(live_server + self.url)
+        driver.get(live_server + reverse("upload-multi"))
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(
             " \n ".join(
