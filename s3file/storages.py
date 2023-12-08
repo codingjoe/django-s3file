@@ -21,7 +21,9 @@ class S3MockStorage(FileSystemStorage):
                 def generate_presigned_post(bucket_name, key, **policy):
                     policy = json.dumps(policy).encode()
                     policy_b64 = base64.b64encode(policy).decode()
-                    date = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+                    date = datetime.datetime.now(tz=datetime.timezone.utc).strftime(
+                        "%Y%m%dT%H%M%SZ"
+                    )
                     aws_id = getattr(
                         settings,
                         "AWS_ACCESS_KEY_ID",
