@@ -1,4 +1,4 @@
-bandit==1.7.6
+bandit==1.7.7
 black==24.1.0
 flake8==7.0.0
 isort==5.13.2
