@@ -5,43 +5,43 @@ build-backend = "flit_scm:buildapi"
 [project]
 name = "django-s3file"
 authors = [
-    { name = "Johannes Maron", email = "johannes@maron.family" }
+  { name = "Johannes Maron", email = "johannes@maron.family" }
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
 dynamic = ["version", "description"]
 classifiers = [
-    "Development Status :: 6 - Mature",
-    "Environment :: Web Environment",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: JavaScript",
-    "Topic :: Software Development",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Framework :: Django",
-    "Framework :: Django :: 3.2",
-    "Framework :: Django :: 4.0",
-    "Framework :: Django :: 4.1",
+  "Development Status :: 6 - Mature",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: JavaScript",
+  "Topic :: Software Development",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Framework :: Django",
+  "Framework :: Django :: 3.2",
+  "Framework :: Django :: 4.2",
+  "Framework :: Django :: 4.5",
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "django>=2.0",
-    "django-storages>=1.6",
-    "boto3",
+  "django>=2.0",
+  "django-storages>=1.6",
+  "boto3",
 ]
 
 [project.optional-dependencies]
 test = [
-    "pytest >=2.7.3",
-    "pytest-cov",
-    "pytest-django",
-    "selenium",
+  "pytest >=2.7.3",
+  "pytest-cov",
+  "pytest-django",
+  "selenium",
 ]
 
 [project.urls]
@@ -57,7 +57,7 @@ write_to = "s3file/_version.py"
 minversion = "6.0"
 addopts = "--cov=s3file --tb=short -rxs"
 testpaths = [
-    "tests",
+  "tests",
 ]
 DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
 
