@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.admin.widgets import AdminFileWidget
 
 from s3file.forms import S3FileInputMixin
 
@@ -10,10 +11,13 @@ if S3FileInputMixin not in forms.ClearableFileInput.__bases__:
     ) + forms.ClearableFileInput.__bases__
 
 
-class UploadForm(forms.ModelForm):
+class FileForm(forms.ModelForm):
     class Meta:
         model = FileModel
         fields = ("file", "other_file")
+        widgets = {
+            "file": AdminFileWidget,
+        }
 
 
 class MultipleFileInput(forms.ClearableFileInput):

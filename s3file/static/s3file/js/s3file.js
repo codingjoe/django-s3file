@@ -118,7 +118,7 @@
     window.uploading = 0
     form.loaded = 0
     form.total = 0
-    var inputs = Array.from(form.querySelectorAll('.s3file'))
+    var inputs = Array.from(form.querySelectorAll('input[type=file].s3file'))
 
     inputs.forEach(function (input) {
       var hiddenS3Input = document.createElement('input')
@@ -140,7 +140,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    var forms = Array.from(document.querySelectorAll('.s3file')).map(function (input) {
+    var forms = Array.from(document.querySelectorAll('input[type=file].s3file')).map(function (input) {
       return input.closest('form')
     })
     forms = new Set(forms)

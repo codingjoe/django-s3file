@@ -3,7 +3,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 from django.views import generic
 
-from tests.testapp import forms
+from . import forms, models
 
 
 class FileEncoder(DjangoJSONEncoder):
@@ -13,8 +13,28 @@ class FileEncoder(DjangoJSONEncoder):
         return super().default(o)
 
 
-class ExampleFormView(generic.FormView):
-    form_class = forms.UploadForm
+class ExampleCreateView(generic.CreateView):
+    model = models.FileModel
+    fields = ["file", "other_file"]
+    template_name = "form.html"
+
+    def form_valid(self, form):
+        return JsonResponse(
+            {
+                "POST": self.request.POST,
+                "FILES": {
+                    "file": self.request.FILES.getlist("file"),
+                    "other_file": self.request.FILES.getlist("other_file"),
+                },
+            },
+            status=201,
+            encoder=FileEncoder,
+        )
+
+
+class ExampleUpdateView(generic.UpdateView):
+    model = models.FileModel
+    form_class = forms.FileForm
     template_name = "form.html"
 
     def form_valid(self, form):
