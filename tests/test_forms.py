@@ -3,20 +3,17 @@ import os
 from contextlib import contextmanager
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms import ClearableFileInput
+from django.urls import reverse_lazy
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import staleness_of
 from selenium.webdriver.support.wait import WebDriverWait
 
 from s3file.storages import storage
-from tests.testapp.forms import UploadForm
-
-try:
-    from django.urls import reverse
-except ImportError:
-    # Django 1.8 support
-    from django.core.urlresolvers import reverse
+from tests.testapp.forms import FileForm
+from tests.testapp.models import FileModel
 
 
 @contextmanager
@@ -27,15 +24,13 @@ def wait_for_page_load(driver, timeout=30):
 
 
 class TestS3FileInput:
-    @property
-    def url(self):
-        return reverse("upload")
+    create_url = reverse_lazy("example-create")
 
     def test_value_from_datadict(self, freeze_upload_folder, client, upload_file):
         with open(upload_file) as f:
             uploaded_file = storage.save(freeze_upload_folder / "test.jpg", f)
         response = client.post(
-            reverse("upload"),
+            self.create_url,
             {
                 "file": f"custom/location/{uploaded_file}",
                 "file-s3f-signature": "FxQXie3wnVnCUFqGzFZ8DCFKAXFA3bnQ8tE96U11o80",
@@ -46,12 +41,12 @@ class TestS3FileInput:
         assert response.status_code == 201
 
     def test_value_from_datadict_initial_data(self, filemodel):
-        form = UploadForm(instance=filemodel)
+        form = FileForm(instance=filemodel)
         assert filemodel.file.name in form.as_p(), form.as_p()
         assert not form.is_valid()
 
     def test_file_does_not_exist_no_fallback(self, filemodel):
-        form = UploadForm(
+        form = FileForm(
             data={"file": "foo.bar", "s3file": "file"},
             instance=filemodel,
         )
@@ -59,18 +54,18 @@ class TestS3FileInput:
         assert form.cleaned_data["file"] == filemodel.file
 
     def test_initial_no_file_uploaded(self, filemodel):
-        form = UploadForm(data={"file": ""}, instance=filemodel)
+        form = FileForm(data={"file": ""}, instance=filemodel)
         assert form.is_valid(), form.errors
         assert not form.has_changed()
         assert form.cleaned_data["file"] == filemodel.file
 
     def test_initial_fallback(self, filemodel):
-        form = UploadForm(data={"file": ""}, instance=filemodel)
+        form = FileForm(data={"file": ""}, instance=filemodel)
         assert form.is_valid()
         assert form.cleaned_data["file"] == filemodel.file
 
     def test_clear(self, filemodel):
-        form = UploadForm(data={"file-clear": "1"}, instance=filemodel)
+        form = FileForm(data={"file-clear": "1"}, instance=filemodel)
         assert form.is_valid()
         assert not form.cleaned_data["file"]
 
@@ -137,7 +132,7 @@ class TestS3FileInput:
 
     @pytest.mark.selenium
     def test_no_js_error(self, driver, live_server):
-        driver.get(live_server + self.url)
+        driver.get(live_server + self.create_url)
 
         with pytest.raises(NoSuchElementException):
             error = driver.find_element(By.XPATH, "//body[@JSError]")
@@ -147,7 +142,28 @@ class TestS3FileInput:
     def test_file_insert(
         self, request, driver, live_server, upload_file, freeze_upload_folder
     ):
-        driver.get(live_server + self.url)
+        driver.get(live_server + self.create_url)
+        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
+        file_input.send_keys(upload_file)
+        assert file_input.get_attribute("name") == "file"
+        with wait_for_page_load(driver, timeout=10):
+            file_input.submit()
+        assert storage.exists("tmp/s3file/%s.txt" % request.node.name)
+
+        with pytest.raises(NoSuchElementException):
+            error = driver.find_element(By.XPATH, "//body[@JSError]")
+            pytest.fail(error.get_attribute("JSError"))
+
+    @pytest.mark.selenium
+    def test_file_update(
+        self, request, driver, live_server, upload_file, freeze_upload_folder
+    ):
+        FileModel.objects.create(
+            file=SimpleUploadedFile(
+                f"{request.node.name}.txt", request.node.name.encode()
+            )
+        )
+        driver.get(live_server + reverse_lazy("example-update", kwargs={"pk": 1}))
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(upload_file)
         assert file_input.get_attribute("name") == "file"
@@ -163,7 +179,7 @@ class TestS3FileInput:
     def test_file_insert_submit_value(
         self, driver, live_server, upload_file, freeze_upload_folder
     ):
-        driver.get(live_server + self.url)
+        driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(upload_file)
         assert file_input.get_attribute("name") == "file"
@@ -172,7 +188,7 @@ class TestS3FileInput:
             save_button.click()
         assert "save" in driver.page_source
 
-        driver.get(live_server + self.url)
+        driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(upload_file)
         assert file_input.get_attribute("name") == "file"
@@ -184,7 +200,7 @@ class TestS3FileInput:
 
     @pytest.mark.selenium
     def test_progress(self, driver, live_server, upload_file, freeze_upload_folder):
-        driver.get(live_server + self.url)
+        driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(upload_file)
         assert file_input.get_attribute("name") == "file"
@@ -193,7 +209,7 @@ class TestS3FileInput:
             save_button.click()
         assert "save" in driver.page_source
 
-        driver.get(live_server + self.url)
+        driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(upload_file)
         assert file_input.get_attribute("name") == "file"
@@ -213,7 +229,7 @@ class TestS3FileInput:
         another_upload_file,
         yet_another_upload_file,
     ):
-        driver.get(live_server + reverse("upload-multi"))
+        driver.get(live_server + reverse_lazy("upload-multi"))
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(
             " \n ".join(
