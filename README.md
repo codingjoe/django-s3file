@@ -99,7 +99,7 @@ S3File automatically replaces Django's `ClearableFileInput` widget, you
 do not need to alter your code at all.
 
 The `ClearableFileInput` widget is only than automatically replaced when
-the `DEFAULT_FILE_STORAGE` setting is set to `django-storages`'
+the `STORAGES["default"]` setting is set to `django-storages`'
 `S3Boto3Storage` or the dummy `FileSystemStorage` is enabled.
 
 ### Setting up the AWS S3 bucket
