@@ -187,6 +187,7 @@ class TestS3FileInput:
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
         assert "save" in driver.page_source
+        assert "formaction" not in driver.page_source
 
         driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
@@ -197,6 +198,7 @@ class TestS3FileInput:
             save_button.click()
         assert "save_continue" in driver.page_source
         assert "continue_value" in driver.page_source
+        assert "formaction" in driver.page_source
 
     @pytest.mark.selenium
     def test_progress(self, driver, live_server, upload_file, freeze_upload_folder):

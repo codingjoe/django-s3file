@@ -15,7 +15,7 @@
     {% csrf_token %}
     {{ form }}
     <input type="submit" name="save" value="Save"/>
-    <button type="submit" name="save_continue" value="continue_value">Save &amp; continue</button>
+    <button type="submit" name="save_continue" value="continue_value" formaction="?formaction=1">Save &amp; continue</button>
     <div class="progress">
         <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0"
              aria-valuemax="100">0%

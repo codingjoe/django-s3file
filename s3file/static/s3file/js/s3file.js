@@ -114,7 +114,7 @@
     form.appendChild(submitInput)
   }
 
-  function uploadS3Inputs (form) {
+  function uploadS3Inputs (form, submitter) {
     window.uploading = 0
     form.loaded = 0
     form.total = 0
@@ -136,6 +136,15 @@
       window.uploading += 1
       uploadFiles(form, input, input.name)
     })
+    // override form attributes with submit button attributes
+    if (submitter) {
+       form.action = submitter.getAttribute('formaction') || form.action
+       form.method = submitter.getAttribute('formmethod') || form.method
+       form.enctype = submitter.getAttribute('formEnctype') || form.enctype
+       form.formnovalidate = submitter.getAttribute('formnovalidate') || form.novalidate
+       form.target = submitter.getAttribute('formtarget') || form.target
+    }
+
     waitForAllFiles(form)
   }
 
@@ -147,7 +156,7 @@
     forms.forEach(function (form) {
       form.addEventListener('submit', function (e) {
         e.preventDefault()
-        uploadS3Inputs(e.target)
+        uploadS3Inputs(e.target, e.submitter)
       })
       var submitButtons = form.querySelectorAll('input[type=submit], button[type=submit]')
       Array.from(submitButtons).forEach(function (submitButton) {
