@@ -104,16 +104,6 @@
     })
   }
 
-  function clickSubmit (e) {
-    var submitButton = e.currentTarget
-    var form = submitButton.closest('form')
-    var submitInput = document.createElement('input')
-    submitInput.type = 'hidden'
-    submitInput.value = submitButton.value || '1'
-    submitInput.name = submitButton.name
-    form.appendChild(submitInput)
-  }
-
   function uploadS3Inputs (form, submitter) {
     window.uploading = 0
     form.loaded = 0
@@ -136,13 +126,20 @@
       window.uploading += 1
       uploadFiles(form, input, input.name)
     })
-    // override form attributes with submit button attributes
+
     if (submitter) {
+       // override form attributes with submit button attributes
        form.action = submitter.getAttribute('formaction') || form.action
        form.method = submitter.getAttribute('formmethod') || form.method
        form.enctype = submitter.getAttribute('formEnctype') || form.enctype
        form.formnovalidate = submitter.getAttribute('formnovalidate') || form.novalidate
        form.target = submitter.getAttribute('formtarget') || form.target
+       // add submit button value to form
+       var submitInput = document.createElement('input')
+       submitInput.type = 'hidden'
+       submitInput.value = submitter.value || '1'
+       submitInput.name = submitter.name
+       form.appendChild(submitInput)
     }
 
     waitForAllFiles(form)
@@ -157,10 +154,6 @@
       form.addEventListener('submit', function (e) {
         e.preventDefault()
         uploadS3Inputs(e.target, e.submitter)
-      })
-      var submitButtons = form.querySelectorAll('input[type=submit], button[type=submit]')
-      Array.from(submitButtons).forEach(function (submitButton) {
-        submitButton.addEventListener('click', clickSubmit)
       })
     })
   })
