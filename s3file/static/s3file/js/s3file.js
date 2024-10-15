@@ -104,7 +104,13 @@
     })
   }
 
-  function uploadS3Inputs (form, submitter) {
+  function uploadS3Inputs (event) {
+
+    event.preventDefault()
+
+    var form = event.target
+    var submitter = event.submitter
+
     window.uploading = 0
     form.loaded = 0
     form.total = 0
@@ -151,10 +157,7 @@
     })
     forms = new Set(forms)
     forms.forEach(function (form) {
-      form.addEventListener('submit', function (e) {
-        e.preventDefault()
-        uploadS3Inputs(e.target, e.submitter)
-      })
+      form.addEventListener('submit', uploadS3Inputs)
     })
   })
 })()

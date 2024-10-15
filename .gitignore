@@ -59,4 +59,3 @@ target/
 node_modules
 
 *.min.js
-.python-version
