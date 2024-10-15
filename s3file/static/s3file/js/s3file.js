@@ -138,7 +138,7 @@
        form.action = submitter.getAttribute('formaction') || form.action
        form.method = submitter.getAttribute('formmethod') || form.method
        form.enctype = submitter.getAttribute('formEnctype') || form.enctype
-       form.formnovalidate = submitter.getAttribute('formnovalidate') || form.novalidate
+       form.novalidate = submitter.getAttribute('formnovalidate') || form.novalidate
        form.target = submitter.getAttribute('formtarget') || form.target
        // add submit button value to form
        var submitInput = document.createElement('input')
