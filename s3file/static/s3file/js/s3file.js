@@ -2,8 +2,8 @@
 
 (function () {
   function parseURL (text) {
-    var xml = new window.DOMParser().parseFromString(text, 'text/xml')
-    var tag = xml.getElementsByTagName('Key')[0]
+    const xml = new window.DOMParser().parseFromString(text, 'text/xml')
+    const tag = xml.getElementsByTagName('Key')[0]
     return decodeURI(tag.childNodes[0].nodeValue)
   }
 
@@ -20,7 +20,7 @@
   function request (method, url, data, fileInput, file, form) {
     file.loaded = 0
     return new Promise(function (resolve, reject) {
-      var xhr = new window.XMLHttpRequest()
+      const xhr = new window.XMLHttpRequest()
 
       xhr.onload = function () {
         if (xhr.status === 201) {
@@ -31,11 +31,11 @@
       }
 
       xhr.upload.onprogress = function (e) {
-        var diff = e.loaded - file.loaded
+        const diff = e.loaded - file.loaded
         form.loaded += diff
         fileInput.loaded += diff
         file.loaded = e.loaded
-        var defaultEventData = {
+        const defaultEventData = {
           currentFile: file,
           currentFileName: file.name,
           currentFileProgress: Math.min(e.loaded / e.total, 1),
@@ -67,15 +67,15 @@
   }
 
   function uploadFiles (form, fileInput, name) {
-    var url = fileInput.getAttribute('data-url')
+    const url = fileInput.getAttribute('data-url')
     fileInput.loaded = 0
     fileInput.total = 0
-    var promises = Array.from(fileInput.files).map(function (file) {
+    const promises = Array.from(fileInput.files).map(function (file) {
       form.total += file.size
       fileInput.total += file.size
-      var s3Form = new window.FormData()
+      const s3Form = new window.FormData()
       Array.from(fileInput.attributes).forEach(function (attr) {
-        var name = attr.name
+        let name = attr.name
 
         if (name.startsWith('data-fields')) {
           name = name.replace('data-fields-', '')
@@ -89,7 +89,7 @@
     })
     Promise.all(promises).then(function (results) {
       results.forEach(function (result) {
-        var hiddenFileInput = document.createElement('input')
+        const hiddenFileInput = document.createElement('input')
         hiddenFileInput.type = 'hidden'
         hiddenFileInput.name = name
         hiddenFileInput.value = parseURL(result)
@@ -105,24 +105,23 @@
   }
 
   function uploadS3Inputs (event) {
-
     event.preventDefault()
 
-    var form = event.target
-    var submitter = event.submitter
+    const form = event.target
+    const submitter = event.submitter
 
     window.uploading = 0
     form.loaded = 0
     form.total = 0
-    var inputs = Array.from(form.querySelectorAll('input[type=file].s3file'))
+    const inputs = Array.from(form.querySelectorAll('input[type=file].s3file'))
 
     inputs.forEach(function (input) {
-      var hiddenS3Input = document.createElement('input')
+      const hiddenS3Input = document.createElement('input')
       hiddenS3Input.type = 'hidden'
       hiddenS3Input.name = 's3file'
       hiddenS3Input.value = input.name
       form.appendChild(hiddenS3Input)
-      var hiddenSignatureInput = document.createElement('input')
+      const hiddenSignatureInput = document.createElement('input')
       hiddenSignatureInput.type = 'hidden'
       hiddenSignatureInput.name = input.name + '-s3f-signature'
       hiddenSignatureInput.value = input.dataset.s3fSignature
@@ -134,25 +133,25 @@
     })
 
     if (submitter) {
-       // override form attributes with submit button attributes
-       form.action = submitter.getAttribute('formaction') || form.action
-       form.method = submitter.getAttribute('formmethod') || form.method
-       form.enctype = submitter.getAttribute('formEnctype') || form.enctype
-       form.novalidate = submitter.getAttribute('formnovalidate') || form.novalidate
-       form.target = submitter.getAttribute('formtarget') || form.target
-       // add submit button value to form
-       var submitInput = document.createElement('input')
-       submitInput.type = 'hidden'
-       submitInput.value = submitter.value || '1'
-       submitInput.name = submitter.name
-       form.appendChild(submitInput)
+      // override form attributes with submit button attributes
+      form.action = submitter.getAttribute('formaction') || form.action
+      form.method = submitter.getAttribute('formmethod') || form.method
+      form.enctype = submitter.getAttribute('formEnctype') || form.enctype
+      form.novalidate = submitter.getAttribute('formnovalidate') || form.novalidate
+      form.target = submitter.getAttribute('formtarget') || form.target
+      // add submit button value to form
+      const submitInput = document.createElement('input')
+      submitInput.type = 'hidden'
+      submitInput.value = submitter.value || '1'
+      submitInput.name = submitter.name
+      form.appendChild(submitInput)
     }
 
     waitForAllFiles(form)
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    var forms = Array.from(document.querySelectorAll('input[type=file].s3file')).map(function (input) {
+    let forms = Array.from(document.querySelectorAll('input[type=file].s3file')).map(function (input) {
       return input.closest('form')
     })
     forms = new Set(forms)
