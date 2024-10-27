@@ -11,9 +11,65 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import staleness_of
 from selenium.webdriver.support.wait import WebDriverWait
 
+from s3file import forms
 from s3file.storages import storage
 from tests.testapp.forms import FileForm
 from tests.testapp.models import FileModel
+
+
+class TestAsset:
+    def test_init(self):
+        asset = forms.Asset("path")
+        assert asset.path == "path"
+
+    def test_eq(self):
+        asset = forms.Asset("path")
+        assert asset == "path"
+        assert asset == forms.Asset("path")
+        assert asset != forms.Asset("other")
+
+    def test_hash(self):
+        asset = forms.Asset("path")
+        assert hash(asset) == hash("path")
+
+    def test_str(self, settings):
+        settings.STORAGES = {
+            "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+            "staticfiles": {
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+            },
+        }
+        asset = forms.Asset("path")
+        assert str(asset) == "/static/path"
+
+    def test_absolute_path(self, settings):
+        settings.STORAGES = {
+            "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+            "staticfiles": {
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+            },
+        }
+        asset = forms.Asset("path")
+        assert asset.absolute_path("path") == "/static/path"
+        assert asset.absolute_path("/path") == "/path"
+        assert asset.absolute_path("http://path") == "http://path"
+        assert asset.absolute_path("https://path") == "https://path"
+
+    def test_repr(self):
+        asset = forms.Asset("path")
+        assert repr(asset) == "Asset: 'path'"
+
+
+class TestESM:
+    def test_str(self, settings):
+        settings.STORAGES = {
+            "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+            "staticfiles": {
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+            },
+        }
+        js = forms.ESM("path")
+        assert str(js) == '<script src="/static/path" type="module"></script>'
 
 
 @contextmanager
@@ -71,7 +127,7 @@ class TestS3FileInput:
 
     def test_build_attr(self, freeze_upload_folder):
         assert set(ClearableFileInput().build_attrs({}).keys()) == {
-            "class",
+            "is",
             "data-url",
             "data-fields-x-amz-algorithm",
             "data-fields-x-amz-date",
@@ -85,11 +141,7 @@ class TestS3FileInput:
             ClearableFileInput().build_attrs({})["data-s3f-signature"]
             == "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI"
         )
-        assert ClearableFileInput().build_attrs({})["class"] == "s3file"
-        assert (
-            ClearableFileInput().build_attrs({"class": "my-class"})["class"]
-            == "my-class s3file"
-        )
+        assert ClearableFileInput().build_attrs({})["is"] == "s3-file"
 
     def test_get_conditions(self, freeze_upload_folder):
         conditions = ClearableFileInput().get_conditions(None)
@@ -197,27 +249,6 @@ class TestS3FileInput:
             save_button.click()
         assert "save_continue" in driver.page_source
         assert "continue_value" in driver.page_source
-
-    @pytest.mark.selenium
-    def test_progress(self, driver, live_server, upload_file, freeze_upload_folder):
-        driver.get(live_server + self.create_url)
-        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(upload_file)
-        assert file_input.get_attribute("name") == "file"
-        save_button = driver.find_element(By.XPATH, "//input[@name='save']")
-        with wait_for_page_load(driver, timeout=10):
-            save_button.click()
-        assert "save" in driver.page_source
-
-        driver.get(live_server + self.create_url)
-        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(upload_file)
-        assert file_input.get_attribute("name") == "file"
-        save_button = driver.find_element(By.XPATH, "//button[@name='save_continue']")
-        with wait_for_page_load(driver, timeout=10):
-            save_button.click()
-        response = json.loads(driver.find_elements(By.CSS_SELECTOR, "pre")[0].text)
-        assert response["POST"]["progress"] == "1"
 
     @pytest.mark.selenium
     def test_multi_file(
