@@ -211,7 +211,7 @@ deployment pipeline.
 
 Django does have limited support for [uploading multiple
 files](https://docs.djangoproject.com/en/stable/topics/http/file-uploads/#uploading-multiple-files).
-S3File fully supports this feature. The custom middleware makes ensure
+S3File fully supports this feature. The custom middleware ensures
 that files are accessible via `request.FILES`, even though they have
 been uploaded to AWS S3 directly and not to your Django application
 server.
