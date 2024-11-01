@@ -21,6 +21,7 @@ class ExampleCreateView(generic.CreateView):
     def form_valid(self, form):
         return JsonResponse(
             {
+                "GET": self.request.GET,
                 "POST": self.request.POST,
                 "FILES": {
                     "file": self.request.FILES.getlist("file"),
