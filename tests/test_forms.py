@@ -251,6 +251,22 @@ class TestS3FileInput:
         assert "continue_value" in driver.page_source
 
     @pytest.mark.selenium
+    def test_file_insert_submit_formaction(
+        self, driver, live_server, upload_file, freeze_upload_folder
+    ):
+        driver.get(live_server + self.create_url)
+        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
+        file_input.send_keys(upload_file)
+        assert file_input.get_attribute("name") == "file"
+        save_button = driver.find_element(By.XPATH, "//button[@name='custom_save']")
+        with wait_for_page_load(driver, timeout=10):
+            save_button.click()
+        assert "custom_save" in driver.page_source
+        assert "custom_target" in driver.page_source
+        assert "foo" in driver.page_source
+        assert "bar" in driver.page_source
+
+    @pytest.mark.selenium
     def test_multi_file(
         self,
         driver,
@@ -283,6 +299,8 @@ class TestS3FileInput:
             ],
             "other_file": [os.path.basename(yet_another_upload_file)],
         }
+
+
 
     def test_media(self):
         assert ClearableFileInput().media._js == ["s3file/js/s3file.js"]
