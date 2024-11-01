@@ -235,15 +235,6 @@ class TestS3FileInput:
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(upload_file)
         assert file_input.get_attribute("name") == "file"
-        save_button = driver.find_element(By.XPATH, "//input[@name='save']")
-        with wait_for_page_load(driver, timeout=10):
-            save_button.click()
-        assert "save" in driver.page_source
-
-        driver.get(live_server + self.create_url)
-        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(upload_file)
-        assert file_input.get_attribute("name") == "file"
         save_button = driver.find_element(By.XPATH, "//button[@name='save_continue']")
         with wait_for_page_load(driver, timeout=10):
             save_button.click()
@@ -265,6 +256,19 @@ class TestS3FileInput:
         assert "custom_target" in driver.page_source
         assert "foo" in driver.page_source
         assert "bar" in driver.page_source
+
+    @pytest.mark.selenium
+    def test_file_insert_change_event(
+        self, driver, live_server, upload_file, another_upload_file, freeze_upload_folder
+    ):
+        driver.get(live_server + self.create_url)
+        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
+        file_input.send_keys(upload_file)
+        file_input.send_keys(another_upload_file)
+        save_button = driver.find_element(By.CSS_SELECTOR, "input[name=save]")
+        with wait_for_page_load(driver, timeout=10):
+            save_button.click()
+        assert "save" in driver.page_source
 
     @pytest.mark.selenium
     def test_multi_file(

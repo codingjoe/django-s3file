@@ -32,6 +32,12 @@ export class S3FileInput extends globalThis.HTMLInputElement {
   changeHandler () {
     this.keys = []
     this.upload = null
+    try {
+      this.form.removeEventListener('submit', this.submitHandler.bind(this))
+    } catch (error) {
+      console.debug(error)
+    }
+    this.form.addEventListener('submit', this.submitHandler.bind(this), { once: true })
   }
 
   /**
