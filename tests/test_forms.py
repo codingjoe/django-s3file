@@ -259,7 +259,12 @@ class TestS3FileInput:
 
     @pytest.mark.selenium
     def test_file_insert_change_event(
-        self, driver, live_server, upload_file, another_upload_file, freeze_upload_folder
+        self,
+        driver,
+        live_server,
+        upload_file,
+        another_upload_file,
+        freeze_upload_folder,
     ):
         driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
@@ -303,8 +308,6 @@ class TestS3FileInput:
             ],
             "other_file": [os.path.basename(yet_another_upload_file)],
         }
-
-
 
     def test_media(self):
         assert ClearableFileInput().media._js == ["s3file/js/s3file.js"]
