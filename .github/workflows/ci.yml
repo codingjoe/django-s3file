@@ -42,7 +42,7 @@ jobs:
           node-version-file: .nvmrc
       - name: Install Node dependencies
         run: npm ci
-      - run: node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=lcov.txt
+      - run: node --test --experimental-test-coverage --test-reporter=spec --test-reporter=lcov --test-reporter-destination=stdout --test-reporter-destination=lcov.txt
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

@@ -41,9 +41,11 @@ describe('S3FileInput', () => {
   })
 
   test('changeHandler', () => {
+    const form = document.createElement('form')
     const input = new s3file.S3FileInput()
     input.keys = ['key']
     input.upload = 'upload'
+    form.appendChild(input)
     input.changeHandler()
     assert(!input.keys.length)
     assert(!input.upload)
