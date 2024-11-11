@@ -4,13 +4,51 @@ import pathlib
 import uuid
 
 from django.conf import settings
+from django.templatetags.static import static
 from django.utils.functional import cached_property
+from django.utils.html import format_html, html_safe
 from storages.utils import safe_join
 
 from s3file.middleware import S3FileMiddleware
 from s3file.storages import get_aws_location, storage
 
 logger = logging.getLogger("s3file")
+
+
+@html_safe
+class Asset:
+    """A generic asset that can be included in a template."""
+
+    def __init__(self, path):
+        self.path = path
+
+    def __eq__(self, other):
+        return (self.__class__ is other.__class__ and self.path == other.path) or (
+            other.__class__ is str and self.path == other
+        )
+
+    def __hash__(self):
+        return hash(self.path)
+
+    def __str__(self):
+        return self.absolute_path(self.path)
+
+    def absolute_path(self, path):
+        if path.startswith(("http://", "https://", "/")):
+            return path
+        return static(path)
+
+    def __repr__(self):
+        return f"{type(self).__qualname__}: {self.path!r}"
+
+
+class ESM(Asset):
+    """A JavaScript asset for ECMA Script Modules (ESM)."""
+
+    def __str__(self):
+        path = super().__str__()
+        template = '<script src="{}" type="module"></script>'
+        return format_html(template, self.absolute_path(path))
 
 
 class S3FileInputMixin:
@@ -37,6 +75,7 @@ class S3FileInputMixin:
 
     def build_attrs(self, *args, **kwargs):
         attrs = super().build_attrs(*args, **kwargs)
+        attrs["is"] = "s3-file"
 
         accept = attrs.get("accept")
         response = self.client.generate_presigned_post(
@@ -56,10 +95,6 @@ class S3FileInputMixin:
         )
         defaults.update(attrs)
 
-        try:
-            defaults["class"] += " s3file"
-        except KeyError:
-            defaults["class"] = "s3file"
         return defaults
 
     def get_conditions(self, accept):
@@ -91,4 +126,4 @@ class S3FileInputMixin:
         )  # S3 uses POSIX paths
 
     class Media:
-        js = ("s3file/js/s3file.js" if settings.DEBUG else "s3file/js/s3file.min.js",)
+        js = [ESM("s3file/js/s3file.js")]

@@ -1,158 +1,118 @@
-'use strict';
+/**
+ * Parse XML response from AWS S3 and return the file key.
+ *
+ * @param {string} responseText - XML response form AWS S3.
+ * @return {string} - Key from response.
+ */
+export function getKeyFromResponse (responseText) {
+  const xml = new globalThis.DOMParser().parseFromString(responseText, 'text/xml')
+  return decodeURI(xml.querySelector('Key').innerHTML)
+}
 
-(function () {
-  function parseURL (text) {
-    var xml = new window.DOMParser().parseFromString(text, 'text/xml')
-    var tag = xml.getElementsByTagName('Key')[0]
-    return decodeURI(tag.childNodes[0].nodeValue)
+/**
+ * Custom element to upload files to AWS S3.
+ *
+ * @extends HTMLInputElement
+ */
+export class S3FileInput extends globalThis.HTMLInputElement {
+  constructor () {
+    super()
+    this.type = 'file'
+    this.keys = []
+    this.upload = null
   }
 
-  function waitForAllFiles (form) {
-    if (window.uploading !== 0) {
-      setTimeout(function () {
-        waitForAllFiles(form)
-      }, 100)
-    } else {
-      window.HTMLFormElement.prototype.submit.call(form)
+  connectedCallback () {
+    this.form.addEventListener('formdata', this.fromDataHandler.bind(this))
+    this.form.addEventListener('submit', this.submitHandler.bind(this), { once: true })
+    this.form.addEventListener('upload', this.uploadHandler.bind(this))
+    this.addEventListener('change', this.changeHandler.bind(this))
+  }
+
+  changeHandler () {
+    this.keys = []
+    this.upload = null
+    try {
+      this.form.removeEventListener('submit', this.submitHandler.bind(this))
+    } catch (error) {
+      console.debug(error)
+    }
+    this.form.addEventListener('submit', this.submitHandler.bind(this), { once: true })
+  }
+
+  /**
+   * Submit the form after uploading the files to S3.
+   *
+   * @param {SubmitEvent} event - The submit event.
+   * @return {Promise<void>}
+   */
+  async submitHandler (event) {
+    event.preventDefault()
+    this.form.dispatchEvent(new window.CustomEvent('upload'))
+    await Promise.all(this.form.pendingRquests)
+    this.form.requestSubmit(event.submitter)
+  }
+
+  uploadHandler () {
+    if (this.files.length && !this.upload) {
+      this.upload = this.uploadFiles()
+      this.form.pendingRquests = this.form.pendingRquests || []
+      this.form.pendingRquests.push(this.upload)
     }
   }
 
-  function request (method, url, data, fileInput, file, form) {
-    file.loaded = 0
-    return new Promise(function (resolve, reject) {
-      var xhr = new window.XMLHttpRequest()
-
-      xhr.onload = function () {
-        if (xhr.status === 201) {
-          resolve(xhr.responseText)
-        } else {
-          reject(xhr.statusText)
-        }
+  /**
+   * Append the file key to the form data.
+   *
+   * @param {FormDataEvent} event - The formdata event.
+   */
+  fromDataHandler (event) {
+    if (this.keys.length) {
+      event.formData.delete(this.name)
+      for (const key of this.keys) {
+        event.formData.append(this.name, key)
       }
-
-      xhr.upload.onprogress = function (e) {
-        var diff = e.loaded - file.loaded
-        form.loaded += diff
-        fileInput.loaded += diff
-        file.loaded = e.loaded
-        var defaultEventData = {
-          currentFile: file,
-          currentFileName: file.name,
-          currentFileProgress: Math.min(e.loaded / e.total, 1),
-          originalEvent: e
-        }
-        form.dispatchEvent(new window.CustomEvent('progress', {
-          detail: Object.assign({
-            progress: Math.min(form.loaded / form.total, 1),
-            loaded: form.loaded,
-            total: form.total
-          }, defaultEventData)
-        }))
-        fileInput.dispatchEvent(new window.CustomEvent('progress', {
-          detail: Object.assign({
-            progress: Math.min(fileInput.loaded / fileInput.total, 1),
-            loaded: fileInput.loaded,
-            total: fileInput.total
-          }, defaultEventData)
-        }))
-      }
-
-      xhr.onerror = function () {
-        reject(xhr.statusText)
-      }
-
-      xhr.open(method, url)
-      xhr.send(data)
-    })
+      event.formData.append('s3file', this.name)
+      event.formData.set(`${this.name}-s3f-signature`, this.dataset.s3fSignature)
+    }
   }
 
-  function uploadFiles (form, fileInput, name) {
-    var url = fileInput.getAttribute('data-url')
-    fileInput.loaded = 0
-    fileInput.total = 0
-    var promises = Array.from(fileInput.files).map(function (file) {
-      form.total += file.size
-      fileInput.total += file.size
-      var s3Form = new window.FormData()
-      Array.from(fileInput.attributes).forEach(function (attr) {
-        var name = attr.name
+  /**
+   * Upload files to AWS S3 and populate the keys array.
+   *
+   * @return {Promise<void>}
+   */
+  async uploadFiles () {
+    this.keys = []
+    for (const file of this.files) {
+      const s3Form = new globalThis.FormData()
+      for (const attr of this.attributes) {
+        let name = attr.name
 
         if (name.startsWith('data-fields')) {
           name = name.replace('data-fields-', '')
           s3Form.append(name, attr.value)
         }
-      })
+      }
       s3Form.append('success_action_status', '201')
       s3Form.append('Content-Type', file.type)
       s3Form.append('file', file)
-      return request('POST', url, s3Form, fileInput, file, form)
-    })
-    Promise.all(promises).then(function (results) {
-      results.forEach(function (result) {
-        var hiddenFileInput = document.createElement('input')
-        hiddenFileInput.type = 'hidden'
-        hiddenFileInput.name = name
-        hiddenFileInput.value = parseURL(result)
-        form.appendChild(hiddenFileInput)
-      })
-      fileInput.name = ''
-      window.uploading -= 1
-    }, function (err) {
-      console.log(err)
-      fileInput.setCustomValidity(err)
-      fileInput.reportValidity()
-    })
+      console.debug('uploading', this.dataset.url, file)
+      try {
+        const response = await fetch(this.dataset.url, { method: 'POST', body: s3Form })
+        if (response.status === 201) {
+          this.keys.push(getKeyFromResponse(await response.text()))
+        } else {
+          this.setCustomValidity(response.statusText)
+          this.reportValidity()
+        }
+      } catch (error) {
+        console.error(error)
+        this.setCustomValidity(error)
+        this.reportValidity()
+      }
+    }
   }
+}
 
-  function clickSubmit (e) {
-    var submitButton = e.currentTarget
-    var form = submitButton.closest('form')
-    var submitInput = document.createElement('input')
-    submitInput.type = 'hidden'
-    submitInput.value = submitButton.value || '1'
-    submitInput.name = submitButton.name
-    form.appendChild(submitInput)
-  }
-
-  function uploadS3Inputs (form) {
-    window.uploading = 0
-    form.loaded = 0
-    form.total = 0
-    var inputs = Array.from(form.querySelectorAll('input[type=file].s3file'))
-
-    inputs.forEach(function (input) {
-      var hiddenS3Input = document.createElement('input')
-      hiddenS3Input.type = 'hidden'
-      hiddenS3Input.name = 's3file'
-      hiddenS3Input.value = input.name
-      form.appendChild(hiddenS3Input)
-      var hiddenSignatureInput = document.createElement('input')
-      hiddenSignatureInput.type = 'hidden'
-      hiddenSignatureInput.name = input.name + '-s3f-signature'
-      hiddenSignatureInput.value = input.dataset.s3fSignature
-      form.appendChild(hiddenSignatureInput)
-    })
-    inputs.forEach(function (input) {
-      window.uploading += 1
-      uploadFiles(form, input, input.name)
-    })
-    waitForAllFiles(form)
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    var forms = Array.from(document.querySelectorAll('input[type=file].s3file')).map(function (input) {
-      return input.closest('form')
-    })
-    forms = new Set(forms)
-    forms.forEach(function (form) {
-      form.addEventListener('submit', function (e) {
-        e.preventDefault()
-        uploadS3Inputs(e.target)
-      })
-      var submitButtons = form.querySelectorAll('input[type=submit], button[type=submit]')
-      Array.from(submitButtons).forEach(function (submitButton) {
-        submitButton.addEventListener('click', clickSubmit)
-      })
-    })
-  })
-})()
+globalThis.customElements.define('s3-file', S3FileInput, { extends: 'input' })

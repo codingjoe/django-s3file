@@ -7,7 +7,7 @@ def storage_check(app_configs, **kwargs):
         return [
             Error(
                 "FileSystemStorage should not be used in a production environment.",
-                hint="Please verify your DEFAULT_FILE_STORAGE setting.",
+                hint='Please verify your STORAGES["default"] setting.',
                 id="s3file.E001",
             )
         ]

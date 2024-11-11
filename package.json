@@ -6,9 +6,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "standard",
-    "postinstall": "uglifyjs --compress -o s3file/static/s3file/js/s3file.min.js s3file/static/s3file/js/s3file.js",
-    "minify": "uglifyjs --compress -o s3file/static/s3file/js/s3file.min.js s3file/static/s3file/js/s3file.js",
+    "test": "node --test --experimental-test-coverage",
     "lint:js": "standard"
   },
   "repository": {
@@ -21,14 +19,16 @@
     "django",
     "file"
   ],
-  "author": "Johannes Hoppe <info@johanneshoppe.com>",
+  "author": "Johannes Maron <johannes@maron.family>",
   "license": "MIT",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/codingjoe/django-s3file/issues"
   },
   "homepage": "https://github.com/codingjoe/django-s3file#readme",
   "devDependencies": {
-    "standard": "*",
-    "uglify-js": "*"
+    "global-jsdom": "*",
+    "jsdom": "*",
+    "standard": "*"
   }
 }
