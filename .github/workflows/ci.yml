@@ -11,7 +11,7 @@ jobs:
   dist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -22,7 +22,7 @@ jobs:
   js-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -36,7 +36,7 @@ jobs:
     needs:
       - js-lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -60,7 +60,7 @@ jobs:
           - isort --check-only --diff .
           - pydocstyle .
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -85,7 +85,7 @@ jobs:
           - "5.0"
           - "5.1"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
@@ -121,7 +121,7 @@ jobs:
           - "3.x"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Chrome
         run: sudo apt-get install -y google-chrome-stable
       - name: Install Selenium
@@ -157,7 +157,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
