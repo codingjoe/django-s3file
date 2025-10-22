@@ -183,16 +183,16 @@ class TestS3FileInput:
     def test_render_wraps_in_s3_file_element(self, freeze_upload_folder):
         widget = ClearableFileInput()
         html = widget.render(name="file", value=None)
-        # Check that the output is wrapped in s3-file custom element
+        # Check that the output is the s3-file custom element
         assert html.startswith("<s3-file")
         assert html.endswith("</s3-file>")
-        # Check that data attributes are on the wrapper
+        # Check that data attributes are on the element
         assert "data-url=" in html
         assert "data-s3f-signature=" in html
-        # Check that input element is inside
-        assert '<input' in html
-        assert 'type="file"' in html
+        # Check that name attribute is on the element
         assert 'name="file"' in html
+        # The custom element will create its own UI, no input inside
+        assert '</s3-file>' in html
 
     @pytest.mark.selenium
     def test_no_js_error(self, driver, live_server):

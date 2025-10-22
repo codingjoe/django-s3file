@@ -11,7 +11,7 @@ export function getKeyFromResponse (responseText) {
 
 /**
  * Custom element to upload files to AWS S3.
- * Safari-compatible autonomous custom element that wraps a file input.
+ * Safari-compatible autonomous custom element that acts as a file input.
  *
  * @extends HTMLElement
  */
@@ -20,85 +20,254 @@ export class S3FileInput extends globalThis.HTMLElement {
     super()
     this.keys = []
     this.upload = null
+    this._files = []
+    this._validationMessage = ''
+    this._internals = null
+
+    // Try to attach ElementInternals for form participation
+    try {
+      this._internals = this.attachInternals?.()
+    } catch (e) {
+      // ElementInternals not supported
+    }
   }
 
   connectedCallback () {
-    // Find or create the input element
-    this._input = this.querySelector('input[type="file"]')
-    if (!this._input) {
-      this._input = document.createElement('input')
-      this._input.type = 'file'
-      this._syncAttributes()
-      this.appendChild(this._input)
-    }
+    // Create a hidden file input for the file picker functionality
+    this._hiddenInput = document.createElement('input')
+    this._hiddenInput.type = 'file'
+    this._hiddenInput.style.display = 'none'
 
-    this.form.addEventListener('formdata', this.fromDataHandler.bind(this))
-    this.form.addEventListener('submit', this.submitHandler.bind(this), { once: true })
-    this.form.addEventListener('upload', this.uploadHandler.bind(this))
-    this._input.addEventListener('change', this.changeHandler.bind(this))
+    // Sync attributes to hidden input
+    this._syncAttributesToHiddenInput()
+
+    // Listen for file selection on hidden input
+    this._hiddenInput.addEventListener('change', () => {
+      this._files = this._hiddenInput.files
+      this.dispatchEvent(new Event('change', { bubbles: true }))
+      this.changeHandler()
+    })
+
+    // Create visible button for file selection
+    this._createButton()
+
+    // Append elements
+    this.appendChild(this._hiddenInput)
+
+    // Setup form event listeners
+    this.form?.addEventListener('formdata', this.fromDataHandler.bind(this))
+    this.form?.addEventListener('submit', this.submitHandler.bind(this), { once: true })
+    this.form?.addEventListener('upload', this.uploadHandler.bind(this))
   }
 
   /**
-   * Sync attributes from the custom element to the internal input element.
+   * Create the visible button for file selection.
    */
-  _syncAttributes () {
-    const attrsToSync = ['name', 'accept', 'required', 'multiple', 'disabled', 'id']
-    attrsToSync.forEach(attr => {
-      if (this.hasAttribute(attr)) {
-        this._input.setAttribute(attr, this.getAttribute(attr))
+  _createButton () {
+    this._button = document.createElement('button')
+    this._button.type = 'button'
+    this._button.textContent = 'Choose File'
+    this._button.style.cssText = `
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+    `
+
+    this._button.addEventListener('click', () => {
+      if (!this.disabled) {
+        this._hiddenInput.click()
       }
     })
+
+    this.appendChild(this._button)
+
+    // Add file name display
+    this._fileNameDisplay = document.createElement('span')
+    this._fileNameDisplay.style.cssText = 'margin-left: 8px; color: #666;'
+    this.appendChild(this._fileNameDisplay)
+
+    this._updateDisplay()
   }
 
   /**
-   * Proxy properties to the internal input element.
+   * Update the display of selected files.
+   */
+  _updateDisplay () {
+    if (!this._fileNameDisplay) return
+
+    if (this._files && this._files.length > 0) {
+      const names = Array.from(this._files).map(f => f.name).join(', ')
+      this._fileNameDisplay.textContent = names
+    } else {
+      this._fileNameDisplay.textContent = 'No file chosen'
+    }
+  }
+
+  /**
+   * Sync attributes from custom element to hidden input.
+   */
+  _syncAttributesToHiddenInput () {
+    if (!this._hiddenInput) return
+
+    const attrsToSync = ['accept', 'required', 'multiple']
+    attrsToSync.forEach(attr => {
+      if (this.hasAttribute(attr)) {
+        this._hiddenInput.setAttribute(attr, this.getAttribute(attr))
+      } else {
+        this._hiddenInput.removeAttribute(attr)
+      }
+    })
+
+    if (this.hasAttribute('disabled')) {
+      this._hiddenInput.disabled = true
+      if (this._button) {
+        this._button.disabled = true
+        this._button.style.cursor = 'not-allowed'
+        this._button.style.opacity = '0.6'
+      }
+    } else {
+      this._hiddenInput.disabled = false
+      if (this._button) {
+        this._button.disabled = false
+        this._button.style.cursor = 'pointer'
+        this._button.style.opacity = '1'
+      }
+    }
+  }
+
+  /**
+   * Implement HTMLInputElement-like properties.
    */
   get files () {
-    return this._input ? this._input.files : []
+    return this._files
+  }
+
+  get type () {
+    return 'file'
   }
 
   get name () {
-    return this._input ? this._input.name : this.getAttribute('name') || ''
+    return this.getAttribute('name') || ''
   }
 
   set name (value) {
-    if (this._input) {
-      this._input.name = value
-    }
     this.setAttribute('name', value)
   }
 
+  get value () {
+    if (this._files && this._files.length > 0) {
+      return this._files[0].name
+    }
+    return ''
+  }
+
+  set value (val) {
+    // Setting value on file inputs is restricted for security
+    if (val === '' || val === null) {
+      this._files = []
+      if (this._hiddenInput) {
+        this._hiddenInput.value = ''
+      }
+      this._updateDisplay()
+    }
+  }
+
   get form () {
-    return this._input ? this._input.form : this.closest('form')
+    return this._internals?.form || this.closest('form')
+  }
+
+  get disabled () {
+    return this.hasAttribute('disabled')
+  }
+
+  set disabled (value) {
+    if (value) {
+      this.setAttribute('disabled', '')
+    } else {
+      this.removeAttribute('disabled')
+    }
+  }
+
+  get required () {
+    return this.hasAttribute('required')
+  }
+
+  set required (value) {
+    if (value) {
+      this.setAttribute('required', '')
+    } else {
+      this.removeAttribute('required')
+    }
   }
 
   get validity () {
-    return this._input ? this._input.validity : { valid: true }
+    if (this._internals) {
+      return this._internals.validity
+    }
+    // Create a basic ValidityState-like object
+    const isValid = !this.required || (this._files && this._files.length > 0)
+    return {
+      valid: isValid && !this._validationMessage,
+      valueMissing: this.required && (!this._files || this._files.length === 0),
+      customError: !!this._validationMessage,
+      badInput: false,
+      patternMismatch: false,
+      rangeOverflow: false,
+      rangeUnderflow: false,
+      stepMismatch: false,
+      tooLong: false,
+      tooShort: false,
+      typeMismatch: false
+    }
   }
 
   get validationMessage () {
-    return this._input ? this._input.validationMessage : ''
+    return this._validationMessage
   }
 
   setCustomValidity (message) {
-    if (this._input) {
-      this._input.setCustomValidity(message)
+    this._validationMessage = message || ''
+    if (this._internals && typeof this._internals.setValidity === 'function') {
+      if (message) {
+        this._internals.setValidity({ customError: true }, message)
+      } else {
+        this._internals.setValidity({})
+      }
     }
   }
 
   reportValidity () {
-    return this._input ? this._input.reportValidity() : true
+    const validity = this.validity
+    if (validity && !validity.valid) {
+      this.dispatchEvent(new Event('invalid', { bubbles: false, cancelable: true }))
+      return false
+    }
+    return true
+  }
+
+  checkValidity () {
+    return this.validity.valid
+  }
+
+  click () {
+    if (this._hiddenInput) {
+      this._hiddenInput.click()
+    }
   }
 
   changeHandler () {
     this.keys = []
     this.upload = null
+    this._updateDisplay()
     try {
-      this.form.removeEventListener('submit', this.submitHandler.bind(this))
+      this.form?.removeEventListener('submit', this.submitHandler.bind(this))
     } catch (error) {
       console.debug(error)
     }
-    this.form.addEventListener('submit', this.submitHandler.bind(this), { once: true })
+    this.form?.addEventListener('submit', this.submitHandler.bind(this), { once: true })
   }
 
   /**
@@ -169,7 +338,7 @@ export class S3FileInput extends globalThis.HTMLElement {
         }
       } catch (error) {
         console.error(error)
-        this.setCustomValidity(error)
+        this.setCustomValidity(String(error))
         this.reportValidity()
       }
     }
@@ -183,13 +352,14 @@ export class S3FileInput extends globalThis.HTMLElement {
   }
 
   attributeChangedCallback (name, oldValue, newValue) {
-    if (this._input && oldValue !== newValue) {
-      if (newValue === null) {
-        this._input.removeAttribute(name)
-      } else {
-        this._input.setAttribute(name, newValue)
-      }
-    }
+    this._syncAttributesToHiddenInput()
+  }
+
+  /**
+   * Declare this element as a form-associated custom element.
+   */
+  static get formAssociated () {
+    return true
   }
 }
 

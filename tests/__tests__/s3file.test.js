@@ -35,8 +35,8 @@ describe('S3FileInput', () => {
     form.addEventListener = mock.fn(form.addEventListener)
     form.appendChild(input)
     assert(form.addEventListener.mock.calls.length === 3)
-    assert(input._input !== null)
-    assert(input._input.type === 'file')
+    assert(input._hiddenInput !== null)
+    assert(input._hiddenInput.type === 'file')
   })
 
   test('changeHandler', () => {

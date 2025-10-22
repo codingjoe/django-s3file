@@ -97,45 +97,51 @@ class S3FileInputMixin:
         return defaults
 
     def render(self, name, value, attrs=None, renderer=None):
-        """Render the widget wrapped in a custom element for Safari compatibility."""
+        """Render the widget as a custom element for Safari compatibility."""
         # Build attributes for the render - this includes data-* attributes
         if attrs is None:
             attrs = {}
         
+        # Ensure name is in attrs
+        attrs = attrs.copy() if attrs else {}
+        attrs['name'] = name
+        
         # Get all the attributes including data-* attributes from build_attrs
         final_attrs = self.build_attrs(self.attrs, attrs)
         
-        # Separate data-* attributes for the wrapper from other attributes for the input
-        wrapper_attrs = {k: v for k, v in final_attrs.items() if k.startswith("data-")}
-        input_attrs = {k: v for k, v in final_attrs.items() if not k.startswith("data-")}
-        
-        # Temporarily override build_attrs to return only non-data attributes for the input
-        original_build_attrs = self.build_attrs
-        def build_attrs_without_data(*args, **kwargs):
-            attrs_dict = original_build_attrs(*args, **kwargs)
-            return {k: v for k, v in attrs_dict.items() if not k.startswith("data-")}
-        
-        self.build_attrs = build_attrs_without_data
-        try:
-            # Call parent's render which will use our modified build_attrs
-            input_html = super().render(name, value, input_attrs, renderer)
-        finally:
-            # Restore original build_attrs
-            self.build_attrs = original_build_attrs
-        
-        # Build wrapper attributes string
+        # Build attributes string for the s3-file element
         from django.utils.html import format_html_join
-        wrapper_attrs_html = format_html_join(
+        from django.utils.safestring import mark_safe
+        attrs_html = format_html_join(
             ' ',
             '{}="{}"',
-            wrapper_attrs.items()
+            final_attrs.items()
         )
         
-        # Wrap the input in the s3-file custom element
-        if wrapper_attrs_html:
-            return format_html('<s3-file {}>{}</s3-file>', wrapper_attrs_html, input_html)
-        else:
-            return format_html('<s3-file>{}</s3-file>', input_html)
+        # Render the s3-file custom element
+        # For ClearableFileInput, we also need to show the current value and clear checkbox
+        output = []
+        if value and hasattr(value, 'url'):
+            # Show currently uploaded file (similar to ClearableFileInput)
+            output.append(format_html(
+                '<div>Currently: <a href="{}">{}</a></div>',
+                value.url,
+                value
+            ))
+            # Add clear checkbox
+            clear_checkbox_name = self.clear_checkbox_name(name)
+            clear_checkbox_id = self.clear_checkbox_id(clear_checkbox_name)
+            output.append(format_html(
+                '<div><input type="checkbox" name="{}" id="{}"><label for="{}"> Clear</label></div>',
+                clear_checkbox_name,
+                clear_checkbox_id,
+                clear_checkbox_id
+            ))
+        
+        # Add the s3-file custom element
+        output.append(format_html('<s3-file {}></s3-file>', attrs_html))
+        
+        return mark_safe(''.join(str(part) for part in output))
 
     def get_conditions(self, accept):
         conditions = [
