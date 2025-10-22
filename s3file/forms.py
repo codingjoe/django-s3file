@@ -98,23 +98,30 @@ class S3FileInputMixin:
 
     def render(self, name, value, attrs=None, renderer=None):
         """Render the widget wrapped in a custom element for Safari compatibility."""
-        # Build attributes for the render
+        # Build attributes for the render - this includes data-* attributes
         if attrs is None:
             attrs = {}
         
-        # Get all the attributes including data-* attributes
+        # Get all the attributes including data-* attributes from build_attrs
         final_attrs = self.build_attrs(self.attrs, attrs)
         
         # Separate data-* attributes for the wrapper from other attributes for the input
         wrapper_attrs = {k: v for k, v in final_attrs.items() if k.startswith("data-")}
         input_attrs = {k: v for k, v in final_attrs.items() if not k.startswith("data-")}
         
-        # Call parent's render with only non-data attributes
-        # We need to temporarily set attrs to avoid double-adding data attributes
-        original_attrs = self.attrs
-        self.attrs = {}
-        input_html = super().render(name, value, input_attrs, renderer)
-        self.attrs = original_attrs
+        # Temporarily override build_attrs to return only non-data attributes for the input
+        original_build_attrs = self.build_attrs
+        def build_attrs_without_data(*args, **kwargs):
+            attrs_dict = original_build_attrs(*args, **kwargs)
+            return {k: v for k, v in attrs_dict.items() if not k.startswith("data-")}
+        
+        self.build_attrs = build_attrs_without_data
+        try:
+            # Call parent's render which will use our modified build_attrs
+            input_html = super().render(name, value, input_attrs, renderer)
+        finally:
+            # Restore original build_attrs
+            self.build_attrs = original_build_attrs
         
         # Build wrapper attributes string
         from django.utils.html import format_html_join
