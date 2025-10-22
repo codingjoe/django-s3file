@@ -127,7 +127,6 @@ class TestS3FileInput:
 
     def test_build_attr(self, freeze_upload_folder):
         assert set(ClearableFileInput().build_attrs({}).keys()) == {
-            "is",
             "data-url",
             "data-fields-x-amz-algorithm",
             "data-fields-x-amz-date",
@@ -141,7 +140,6 @@ class TestS3FileInput:
             ClearableFileInput().build_attrs({})["data-s3f-signature"]
             == "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI"
         )
-        assert ClearableFileInput().build_attrs({})["is"] == "s3-file"
 
     def test_get_conditions(self, freeze_upload_folder):
         conditions = ClearableFileInput().get_conditions(None)
@@ -181,6 +179,20 @@ class TestS3FileInput:
         assert {"Content-Type": "application/pdf"} not in widget.get_conditions(
             "application/pdf,image/*"
         )
+
+    def test_render_wraps_in_s3_file_element(self, freeze_upload_folder):
+        widget = ClearableFileInput()
+        html = widget.render(name="file", value=None)
+        # Check that the output is wrapped in s3-file custom element
+        assert html.startswith("<s3-file")
+        assert html.endswith("</s3-file>")
+        # Check that data attributes are on the wrapper
+        assert "data-url=" in html
+        assert "data-s3f-signature=" in html
+        # Check that input element is inside
+        assert '<input' in html
+        assert 'type="file"' in html
+        assert 'name="file"' in html
 
     @pytest.mark.selenium
     def test_no_js_error(self, driver, live_server):

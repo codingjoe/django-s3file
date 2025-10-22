@@ -24,7 +24,6 @@ describe('getKeyFromResponse', () => {
 describe('S3FileInput', () => {
   test('constructor', () => {
     const input = new s3file.S3FileInput()
-    assert.strictEqual(input.type, 'file')
     assert.deepStrictEqual(input.keys, [])
     assert.strictEqual(input.upload, null)
   })
@@ -33,11 +32,11 @@ describe('S3FileInput', () => {
     const form = document.createElement('form')
     document.body.appendChild(form)
     const input = new s3file.S3FileInput()
-    input.addEventListener = mock.fn(input.addEventListener)
     form.addEventListener = mock.fn(form.addEventListener)
     form.appendChild(input)
     assert(form.addEventListener.mock.calls.length === 3)
-    assert(input.addEventListener.mock.calls.length === 1)
+    assert(input._input !== null)
+    assert(input._input.type === 'file')
   })
 
   test('changeHandler', () => {

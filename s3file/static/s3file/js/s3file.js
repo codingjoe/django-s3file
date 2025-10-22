@@ -11,22 +11,83 @@ export function getKeyFromResponse (responseText) {
 
 /**
  * Custom element to upload files to AWS S3.
+ * Safari-compatible autonomous custom element that wraps a file input.
  *
- * @extends HTMLInputElement
+ * @extends HTMLElement
  */
-export class S3FileInput extends globalThis.HTMLInputElement {
+export class S3FileInput extends globalThis.HTMLElement {
   constructor () {
     super()
-    this.type = 'file'
     this.keys = []
     this.upload = null
   }
 
   connectedCallback () {
+    // Find or create the input element
+    this._input = this.querySelector('input[type="file"]')
+    if (!this._input) {
+      this._input = document.createElement('input')
+      this._input.type = 'file'
+      this._syncAttributes()
+      this.appendChild(this._input)
+    }
+
     this.form.addEventListener('formdata', this.fromDataHandler.bind(this))
     this.form.addEventListener('submit', this.submitHandler.bind(this), { once: true })
     this.form.addEventListener('upload', this.uploadHandler.bind(this))
-    this.addEventListener('change', this.changeHandler.bind(this))
+    this._input.addEventListener('change', this.changeHandler.bind(this))
+  }
+
+  /**
+   * Sync attributes from the custom element to the internal input element.
+   */
+  _syncAttributes () {
+    const attrsToSync = ['name', 'accept', 'required', 'multiple', 'disabled', 'id']
+    attrsToSync.forEach(attr => {
+      if (this.hasAttribute(attr)) {
+        this._input.setAttribute(attr, this.getAttribute(attr))
+      }
+    })
+  }
+
+  /**
+   * Proxy properties to the internal input element.
+   */
+  get files () {
+    return this._input ? this._input.files : []
+  }
+
+  get name () {
+    return this._input ? this._input.name : this.getAttribute('name') || ''
+  }
+
+  set name (value) {
+    if (this._input) {
+      this._input.name = value
+    }
+    this.setAttribute('name', value)
+  }
+
+  get form () {
+    return this._input ? this._input.form : this.closest('form')
+  }
+
+  get validity () {
+    return this._input ? this._input.validity : { valid: true }
+  }
+
+  get validationMessage () {
+    return this._input ? this._input.validationMessage : ''
+  }
+
+  setCustomValidity (message) {
+    if (this._input) {
+      this._input.setCustomValidity(message)
+    }
+  }
+
+  reportValidity () {
+    return this._input ? this._input.reportValidity() : true
   }
 
   changeHandler () {
@@ -113,6 +174,23 @@ export class S3FileInput extends globalThis.HTMLInputElement {
       }
     }
   }
+
+  /**
+   * Called when observed attributes change.
+   */
+  static get observedAttributes () {
+    return ['name', 'accept', 'required', 'multiple', 'disabled', 'id']
+  }
+
+  attributeChangedCallback (name, oldValue, newValue) {
+    if (this._input && oldValue !== newValue) {
+      if (newValue === null) {
+        this._input.removeAttribute(name)
+      } else {
+        this._input.setAttribute(name, newValue)
+      }
+    }
+  }
 }
 
-globalThis.customElements.define('s3-file', S3FileInput, { extends: 'input' })
+globalThis.customElements.define('s3-file', S3FileInput)

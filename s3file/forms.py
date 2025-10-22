@@ -75,7 +75,6 @@ class S3FileInputMixin:
 
     def build_attrs(self, *args, **kwargs):
         attrs = super().build_attrs(*args, **kwargs)
-        attrs["is"] = "s3-file"
 
         accept = attrs.get("accept")
         response = self.client.generate_presigned_post(
@@ -96,6 +95,40 @@ class S3FileInputMixin:
         defaults.update(attrs)
 
         return defaults
+
+    def render(self, name, value, attrs=None, renderer=None):
+        """Render the widget wrapped in a custom element for Safari compatibility."""
+        # Build attributes for the render
+        if attrs is None:
+            attrs = {}
+        
+        # Get all the attributes including data-* attributes
+        final_attrs = self.build_attrs(self.attrs, attrs)
+        
+        # Separate data-* attributes for the wrapper from other attributes for the input
+        wrapper_attrs = {k: v for k, v in final_attrs.items() if k.startswith("data-")}
+        input_attrs = {k: v for k, v in final_attrs.items() if not k.startswith("data-")}
+        
+        # Call parent's render with only non-data attributes
+        # We need to temporarily set attrs to avoid double-adding data attributes
+        original_attrs = self.attrs
+        self.attrs = {}
+        input_html = super().render(name, value, input_attrs, renderer)
+        self.attrs = original_attrs
+        
+        # Build wrapper attributes string
+        from django.utils.html import format_html_join
+        wrapper_attrs_html = format_html_join(
+            ' ',
+            '{}="{}"',
+            wrapper_attrs.items()
+        )
+        
+        # Wrap the input in the s3-file custom element
+        if wrapper_attrs_html:
+            return format_html('<s3-file {}>{}</s3-file>', wrapper_attrs_html, input_html)
+        else:
+            return format_html('<s3-file>{}</s3-file>', input_html)
 
     def get_conditions(self, accept):
         conditions = [
