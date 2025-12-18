@@ -1,7 +1,7 @@
 /**
  * Parse XML response from AWS S3 and return the file key.
  *
- * @param {string} responseText - XML response form AWS S3.
+ * @param {string} responseText - XML response from AWS S3.
  * @return {string} - Key from response.
  */
 export function getKeyFromResponse(responseText) {
@@ -16,6 +16,7 @@ export function getKeyFromResponse(responseText) {
  * @extends HTMLElement
  */
 export class S3FileInput extends globalThis.HTMLElement {
+  static passThroughAttributes = ["accept", "required", "multiple", "class", "style"]
   constructor() {
     super()
     this.keys = []
@@ -34,21 +35,21 @@ export class S3FileInput extends globalThis.HTMLElement {
 
   connectedCallback() {
     // Create a hidden file input for the file picker functionality
-    this._hiddenInput = document.createElement("input")
-    this._hiddenInput.type = "file"
+    this._fileInput = document.createElement("input")
+    this._fileInput.type = "file"
 
     // Sync attributes to hidden input
     this._syncAttributesToHiddenInput()
 
     // Listen for file selection on hidden input
-    this._hiddenInput.addEventListener("change", () => {
-      this._files = this._hiddenInput.files
+    this._fileInput.addEventListener("change", () => {
+      this._files = this._fileInput.files
       this.dispatchEvent(new Event("change", { bubbles: true }))
       this.changeHandler()
     })
 
     // Append elements
-    this.appendChild(this._hiddenInput)
+    this.appendChild(this._fileInput)
 
     // Setup form event listeners
     this.form?.addEventListener("formdata", this.fromDataHandler.bind(this))
@@ -62,18 +63,17 @@ export class S3FileInput extends globalThis.HTMLElement {
    * Sync attributes from custom element to hidden input.
    */
   _syncAttributesToHiddenInput() {
-    if (!this._hiddenInput) return
+    if (!this._fileInput) return
 
-    const attrsToSync = ["accept", "required", "multiple"]
-    attrsToSync.forEach((attr) => {
+    S3FileInput.passThroughAttributes.forEach((attr) => {
       if (this.hasAttribute(attr)) {
-        this._hiddenInput.setAttribute(attr, this.getAttribute(attr))
+        this._fileInput.setAttribute(attr, this.getAttribute(attr))
       } else {
-        this._hiddenInput.removeAttribute(attr)
+        this._fileInput.removeAttribute(attr)
       }
     })
 
-    this._hiddenInput.disabled = this.hasAttribute("disabled")
+    this._fileInput.disabled = this.hasAttribute("disabled")
   }
 
   /**
@@ -106,8 +106,8 @@ export class S3FileInput extends globalThis.HTMLElement {
     // Setting value on file inputs is restricted for security
     if (val === "" || val === null) {
       this._files = []
-      if (this._hiddenInput) {
-        this._hiddenInput.value = ""
+      if (this._fileInput) {
+        this._fileInput.value = ""
       }
     }
   }
@@ -190,8 +190,8 @@ export class S3FileInput extends globalThis.HTMLElement {
   }
 
   click() {
-    if (this._hiddenInput) {
-      this._hiddenInput.click()
+    if (this._fileInput) {
+      this._fileInput.click()
     }
   }
 
@@ -216,15 +216,15 @@ export class S3FileInput extends globalThis.HTMLElement {
    */
   async submitHandler(event) {
     event.preventDefault()
-    this.form.dispatchEvent(new window.CustomEvent("upload"))
-    await Promise.all(this.form.pendingRquests)
-    this.form.requestSubmit(event.submitter)
+    this.form?.dispatchEvent(new window.CustomEvent("upload"))
+    await Promise.all(this.form?.pendingRquests)
+    this.form?.requestSubmit(event.submitter)
   }
 
   uploadHandler() {
     if (this.files.length && !this.upload) {
       this.upload = this.uploadFiles()
-      this.form.pendingRquests = this.form.pendingRquests || []
+      this.form.pendingRquests = this.form?.pendingRquests || []
       this.form.pendingRquests.push(this.upload)
     }
   }
@@ -289,7 +289,7 @@ export class S3FileInput extends globalThis.HTMLElement {
    * Called when observed attributes change.
    */
   static get observedAttributes() {
-    return ["name", "accept", "required", "multiple", "disabled", "id"]
+    return this.passThroughAttributes.concat(["name", "id"])
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

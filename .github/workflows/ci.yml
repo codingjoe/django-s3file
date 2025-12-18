@@ -64,11 +64,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
-      - name: Install Selenium
-        run: |
-          curl -LsSfO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -f install -y
-        if: matrix.os == 'ubuntu-latest'
       - uses: astral-sh/setup-uv@v7
       - run: uv run pytest -m selenium
       - uses: codecov/codecov-action@v5
