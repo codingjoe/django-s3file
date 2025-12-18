@@ -30,6 +30,7 @@ class ExampleCreateView(generic.CreateView):
             },
             status=201,
             encoder=FileEncoder,
+            content_type="text/plain",
         )
 
 
@@ -49,6 +50,7 @@ class ExampleUpdateView(generic.UpdateView):
             },
             status=201,
             encoder=FileEncoder,
+            content_type="text/plain",
         )
 
 
@@ -67,4 +69,5 @@ class MultiExampleFormView(generic.FormView):
             },
             status=201,
             encoder=FileEncoder,
+            content_type="text/plain",
         )
