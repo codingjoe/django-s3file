@@ -51,6 +51,17 @@ class InputToS3FileRewriter(HTMLParser):
         else:
             self.output.append(self.get_starttag_text())
 
+    def handle_comment(self, data):
+        # Preserve HTML comments in the output
+        self.output.append(f"<!--{data}-->")
+
+    def handle_decl(self, decl):
+        # Preserve declarations such as <!DOCTYPE ...> in the output
+        self.output.append(f"<!{decl}>")
+
+    def handle_pi(self, data):
+        # Preserve processing instructions such as <?xml ...?> in the output
+        self.output.append(f"<?{data}>")
     def get_html(self):
         return "".join(self.output)
 
