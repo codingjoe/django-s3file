@@ -18,7 +18,7 @@ describe("getKeyFromResponse", () => {
       </PostResponse>`
     assert.strictEqual(
       s3file.getKeyFromResponse(responseText),
-      "tmp/s2file/some file.jpeg"
+      "tmp/s2file/some file.jpeg",
     )
   })
 })

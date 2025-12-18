@@ -1,3 +1,16 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/codingjoe/django-s3file/raw/main/images/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://github.com/codingjoe/django-s3file/raw/main/images/logo-light.svg">
+    <img alt="Django S3file: A lightweight file upload input for Django and Amazon S3" src="https://github.com/codingjoe/django-s3file/raw/main/images/logo-light.svg">
+  </picture>
+<br>
+  <a href="https://github.com/codingjoe/django-s3file?tab=readme-ov-file">Documentation</a> |
+  <a href="https://github.com/codingjoe/django-s3file/issues/new/choose">Issues</a> |
+  <a href="https://github.com/codingjoe/django-s3file/releases">Changelog</a> |
+  <a href="https://github.com/sponsors/codingjoe">Funding</a> 💚
+</p>
+
 # django-s3file
 
 A lightweight file upload input for Django and Amazon S3.

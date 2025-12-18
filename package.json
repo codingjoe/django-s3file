@@ -9,8 +9,7 @@
     "test": "node --test --experimental-test-coverage"
   },
   "prettier": {
-    "semi": false,
-    "trailingComma": "es5"
+    "semi": false
   },
   "repository": {
     "type": "git",

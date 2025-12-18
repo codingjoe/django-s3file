@@ -214,12 +214,12 @@ class TestS3FileInput:
     def test_file_update(
         self, request, driver, live_server, upload_file, freeze_upload_folder
     ):
-        FileModel.objects.create(
+        obj = FileModel.objects.create(
             file=SimpleUploadedFile(
                 f"{request.node.name}.txt", request.node.name.encode()
             )
         )
-        driver.get(live_server + reverse_lazy("example-update", kwargs={"pk": 1}))
+        driver.get(live_server + reverse_lazy("example-update", kwargs={"pk": obj.pk}))
         file_input = driver.find_element(By.XPATH, "//input[@type='file']")
         file_input.send_keys(upload_file)
         assert file_input.get_attribute("name") == ""
@@ -292,7 +292,7 @@ class TestS3FileInput:
         driver.get(live_server + reverse_lazy("upload-multi"))
         file_input = driver.find_element(By.XPATH, "//input[@type='file']")
         file_input.send_keys(
-            " \n ".join([
+            "\n".join([
                 str(freeze_upload_folder / upload_file),
                 str(freeze_upload_folder / another_upload_file),
             ])
