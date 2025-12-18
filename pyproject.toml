@@ -65,11 +65,18 @@ write_to = "s3file/_version.py"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "--cov=s3file --tb=short -rxs"
+addopts = "--cov --cov-report=xml --cov-report=term --tb=short -rxs"
 testpaths = [
   "tests",
 ]
 DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
+
+[tool.coverage.run]
+source = ["s3file"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
 
 [tool.ruff]
 src = ["s3file", "tests"]
