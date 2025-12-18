@@ -6,8 +6,10 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "node --test --experimental-test-coverage",
-    "lint:js": "standard"
+    "test": "node --test --experimental-test-coverage"
+  },
+  "prettier": {
+    "semi": false
   },
   "repository": {
     "type": "git",
@@ -28,7 +30,6 @@
   "homepage": "https://github.com/codingjoe/django-s3file#readme",
   "devDependencies": {
     "global-jsdom": "*",
-    "jsdom": "*",
-    "standard": "*"
+    "jsdom": "*"
   }
 }
