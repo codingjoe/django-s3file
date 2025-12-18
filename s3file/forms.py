@@ -1,7 +1,9 @@
 import base64
+import html
 import logging
 import pathlib
 import uuid
+from html.parser import HTMLParser
 
 from django.conf import settings
 from django.templatetags.static import static
@@ -14,6 +16,63 @@ from s3file.middleware import S3FileMiddleware
 from s3file.storages import get_aws_location, storage
 
 logger = logging.getLogger("s3file")
+
+
+class InputToS3FileRewriter(HTMLParser):
+    """
+    HTML parser that rewrites <input type="file"> tags to <s3-file> custom elements.
+
+    This provides a robust way to transform Django's rendered file input widgets
+    into custom elements, handling various attribute orderings and formats.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.output = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "input":
+            attrs_dict = dict(attrs)
+            if attrs_dict.get("type") == "file":
+                # Replace with s3-file custom element
+                self._write_s3_file_tag(attrs)
+                return
+
+        # For all other tags, preserve as-is
+        self.output.append(self.get_starttag_text())
+
+    def handle_endtag(self, tag):
+        self.output.append(f"</{tag}>")
+
+    def handle_data(self, data):
+        self.output.append(data)
+
+    def handle_startendtag(self, tag, attrs):
+        # For self-closing tags
+        if tag == "input":
+            attrs_dict = dict(attrs)
+            if attrs_dict.get("type") == "file":
+                # Replace with s3-file custom element
+                self._write_s3_file_tag(attrs)
+                return
+
+        self.output.append(self.get_starttag_text())
+
+    def _write_s3_file_tag(self, attrs):
+        """Write the s3-file opening tag with all attributes except type."""
+        self.output.append("<s3-file")
+        for name, value in attrs:
+            if name != "type":  # Skip type attribute
+                if value is None:
+                    self.output.append(f" {name}")
+                else:
+                    escaped_value = html.escape(value, quote=True)
+                    self.output.append(f' {name}="{escaped_value}"')
+        self.output.append(">")
+
+    def get_html(self):
+        """Return the transformed HTML."""
+        return "".join(self.output)
 
 
 @html_safe
@@ -99,11 +158,10 @@ class S3FileInputMixin:
 
     def render(self, name, value, attrs=None, renderer=None):
         """Render the widget as a custom element for Safari compatibility."""
-        return mark_safe(  # noqa: S308
-            str(super().render(name, value, attrs=attrs, renderer=renderer)).replace(
-                f'<input type="{self.input_type}"', "<s3-file"
-            )
-        )
+        html_output = str(super().render(name, value, attrs=attrs, renderer=renderer))
+        parser = InputToS3FileRewriter()
+        parser.feed(html_output)
+        return mark_safe(parser.get_html())  # noqa: S308
 
     def get_conditions(self, accept):
         conditions = [
