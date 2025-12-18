@@ -34,6 +34,9 @@ export class S3FileInput extends globalThis.HTMLElement {
   }
 
   connectedCallback() {
+    // Prevent creating duplicate inputs if already connected
+    if (this._fileInput) return
+
     // Create a hidden file input for the file picker functionality
     this._fileInput = document.createElement("input")
     this._fileInput.type = "file"
@@ -41,22 +44,49 @@ export class S3FileInput extends globalThis.HTMLElement {
     // Sync attributes to hidden input
     this._syncAttributesToHiddenInput()
 
-    // Listen for file selection on hidden input
-    this._fileInput.addEventListener("change", () => {
+    // Create bound handler references for cleanup
+    this._changeHandler = () => {
       this._files = this._fileInput.files
       this.dispatchEvent(new Event("change", { bubbles: true }))
       this.changeHandler()
-    })
+    }
+    this._boundFormDataHandler = this.fromDataHandler.bind(this)
+    this._boundSubmitHandler = this.submitHandler.bind(this)
+    this._boundUploadHandler = this.uploadHandler.bind(this)
+
+    // Listen for file selection on hidden input
+    this._fileInput.addEventListener("change", this._changeHandler)
 
     // Append elements
     this.appendChild(this._fileInput)
 
     // Setup form event listeners
-    this.form?.addEventListener("formdata", this.fromDataHandler.bind(this))
-    this.form?.addEventListener("submit", this.submitHandler.bind(this), {
+    this.form?.addEventListener("formdata", this._boundFormDataHandler)
+    this.form?.addEventListener("submit", this._boundSubmitHandler, {
       once: true,
     })
-    this.form?.addEventListener("upload", this.uploadHandler.bind(this))
+    this.form?.addEventListener("upload", this._boundUploadHandler)
+  }
+
+  disconnectedCallback() {
+    // Clean up event listeners
+    if (this._fileInput) {
+      this._fileInput.removeEventListener("change", this._changeHandler)
+    }
+
+    if (this.form) {
+      this.form.removeEventListener("formdata", this._boundFormDataHandler)
+      this.form.removeEventListener("submit", this._boundSubmitHandler)
+      this.form.removeEventListener("upload", this._boundUploadHandler)
+    }
+
+    // Remove the file input from DOM
+    if (this._fileInput && this._fileInput.parentNode) {
+      this._fileInput.parentNode.removeChild(this._fileInput)
+    }
+
+    // Clear reference to allow reconnection
+    this._fileInput = null
   }
 
   /**
@@ -198,12 +228,17 @@ export class S3FileInput extends globalThis.HTMLElement {
   changeHandler() {
     this.keys = []
     this.upload = null
-    try {
-      this.form?.removeEventListener("submit", this.submitHandler.bind(this))
-    } catch (error) {
-      console.debug(error)
+    // Remove previous submit handler and add a new one
+    if (this._boundSubmitHandler) {
+      try {
+        this.form?.removeEventListener("submit", this._boundSubmitHandler)
+      } catch (error) {
+        console.debug(error)
+      }
     }
-    this.form?.addEventListener("submit", this.submitHandler.bind(this), {
+    // Create a new bound handler for this change
+    this._boundSubmitHandler = this.submitHandler.bind(this)
+    this.form?.addEventListener("submit", this._boundSubmitHandler, {
       once: true,
     })
   }
