@@ -192,7 +192,7 @@ class TestS3FileInput:
         # Check that name attribute is on the element
         assert 'name="file"' in html
         # The custom element will create its own UI, no input inside
-        assert '</s3-file>' in html
+        assert "</s3-file>" in html
 
     @pytest.mark.selenium
     def test_no_js_error(self, driver, live_server):

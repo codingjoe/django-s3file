@@ -99,7 +99,11 @@ class S3FileInputMixin:
 
     def render(self, name, value, attrs=None, renderer=None):
         """Render the widget as a custom element for Safari compatibility."""
-        return mark_safe(str(super().render(name, value, attrs=attrs, renderer=renderer)).replace(f'<input type="{self.input_type}"', '<s3-file'))
+        return mark_safe(
+            str(super().render(name, value, attrs=attrs, renderer=renderer)).replace(
+                f'<input type="{self.input_type}"', "<s3-file"
+            )
+        )
 
     def get_conditions(self, accept):
         conditions = [
