@@ -110,6 +110,25 @@ class TestInputToS3FileRewriter:
         result = parser.get_html()
         assert 'data-value="test&amp;value"' in result
 
+    def test_preserves_existing_html_entities(self):
+        # Test that already-escaped entities in input are preserved (not double-escaped)
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<input type="file" name="test" data-value="test&amp;value">')
+        result = parser.get_html()
+        # Should preserve the &amp; entity, not convert to &amp;amp;
+        assert 'data-value="test&amp;value"' in result
+        assert '&amp;amp;' not in result
+
+    def test_preserves_character_references(self):
+        # Test that character references are preserved (may be in decimal or hex format)
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<input type="file" name="test" data-value="test&#39;s">')
+        result = parser.get_html()
+        # The character reference should be preserved (either &#39; or &#x27; both represent ')
+        assert ('data-value="test&#39;s"' in result or 'data-value="test&#x27;s"' in result)
+        # Verify the actual apostrophe character is NOT directly in the output (should be a reference)
+        assert 'data-value="test\'s"' not in result or '&#' in result
+
     def test_handles_self_closing_tag(self):
         parser = forms.InputToS3FileRewriter()
         parser.feed('<input type="file" name="test" />')

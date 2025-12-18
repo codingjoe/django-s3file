@@ -71,6 +71,14 @@ class InputToS3FileRewriter(HTMLParser):
         # Preserve processing instructions such as <?xml ...?> in the output
         self.output.append(f"<?{data}>")
 
+    def handle_entityref(self, name):
+        # Preserve HTML entities like &amp;, &lt;, &gt;
+        self.output.append(f"&{name};")
+
+    def handle_charref(self, name):
+        # Preserve character references like &#39;, &#x27;
+        self.output.append(f"&#{name};")
+
     def get_html(self):
         return "".join(self.output)
 
