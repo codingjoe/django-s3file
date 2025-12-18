@@ -7,6 +7,7 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.utils.functional import cached_property
 from django.utils.html import format_html, html_safe
+from django.utils.safestring import mark_safe
 from storages.utils import safe_join
 
 from s3file.middleware import S3FileMiddleware
@@ -98,50 +99,7 @@ class S3FileInputMixin:
 
     def render(self, name, value, attrs=None, renderer=None):
         """Render the widget as a custom element for Safari compatibility."""
-        # Build attributes for the render - this includes data-* attributes
-        if attrs is None:
-            attrs = {}
-        
-        # Ensure name is in attrs
-        attrs = attrs.copy() if attrs else {}
-        attrs['name'] = name
-        
-        # Get all the attributes including data-* attributes from build_attrs
-        final_attrs = self.build_attrs(self.attrs, attrs)
-        
-        # Build attributes string for the s3-file element
-        from django.utils.html import format_html_join
-        from django.utils.safestring import mark_safe
-        attrs_html = format_html_join(
-            ' ',
-            '{}="{}"',
-            final_attrs.items()
-        )
-        
-        # Render the s3-file custom element
-        # For ClearableFileInput, we also need to show the current value and clear checkbox
-        output = []
-        if value and hasattr(value, 'url'):
-            # Show currently uploaded file (similar to ClearableFileInput)
-            output.append(format_html(
-                '<div>Currently: <a href="{}">{}</a></div>',
-                value.url,
-                value
-            ))
-            # Add clear checkbox
-            clear_checkbox_name = self.clear_checkbox_name(name)
-            clear_checkbox_id = self.clear_checkbox_id(clear_checkbox_name)
-            output.append(format_html(
-                '<div><input type="checkbox" name="{}" id="{}"><label for="{}"> Clear</label></div>',
-                clear_checkbox_name,
-                clear_checkbox_id,
-                clear_checkbox_id
-            ))
-        
-        # Add the s3-file custom element
-        output.append(format_html('<s3-file {}></s3-file>', attrs_html))
-        
-        return mark_safe(''.join(str(part) for part in output))
+        return mark_safe(str(super().render(name, value, attrs=attrs, renderer=renderer)).replace(f'<input type="{self.input_type}"', '<s3-file'))
 
     def get_conditions(self, accept):
         conditions = [

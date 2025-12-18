@@ -36,7 +36,6 @@ export class S3FileInput extends globalThis.HTMLElement {
     // Create a hidden file input for the file picker functionality
     this._hiddenInput = document.createElement('input')
     this._hiddenInput.type = 'file'
-    this._hiddenInput.style.display = 'none'
 
     // Sync attributes to hidden input
     this._syncAttributesToHiddenInput()
@@ -48,9 +47,6 @@ export class S3FileInput extends globalThis.HTMLElement {
       this.changeHandler()
     })
 
-    // Create visible button for file selection
-    this._createButton()
-
     // Append elements
     this.appendChild(this._hiddenInput)
 
@@ -58,52 +54,6 @@ export class S3FileInput extends globalThis.HTMLElement {
     this.form?.addEventListener('formdata', this.fromDataHandler.bind(this))
     this.form?.addEventListener('submit', this.submitHandler.bind(this), { once: true })
     this.form?.addEventListener('upload', this.uploadHandler.bind(this))
-  }
-
-  /**
-   * Create the visible button for file selection.
-   */
-  _createButton () {
-    this._button = document.createElement('button')
-    this._button.type = 'button'
-    this._button.textContent = 'Choose File'
-    this._button.style.cssText = `
-      padding: 6px 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: white;
-      cursor: pointer;
-      font-size: 14px;
-    `
-
-    this._button.addEventListener('click', () => {
-      if (!this.disabled) {
-        this._hiddenInput.click()
-      }
-    })
-
-    this.appendChild(this._button)
-
-    // Add file name display
-    this._fileNameDisplay = document.createElement('span')
-    this._fileNameDisplay.style.cssText = 'margin-left: 8px; color: #666;'
-    this.appendChild(this._fileNameDisplay)
-
-    this._updateDisplay()
-  }
-
-  /**
-   * Update the display of selected files.
-   */
-  _updateDisplay () {
-    if (!this._fileNameDisplay) return
-
-    if (this._files && this._files.length > 0) {
-      const names = Array.from(this._files).map(f => f.name).join(', ')
-      this._fileNameDisplay.textContent = names
-    } else {
-      this._fileNameDisplay.textContent = 'No file chosen'
-    }
   }
 
   /**
@@ -121,21 +71,7 @@ export class S3FileInput extends globalThis.HTMLElement {
       }
     })
 
-    if (this.hasAttribute('disabled')) {
-      this._hiddenInput.disabled = true
-      if (this._button) {
-        this._button.disabled = true
-        this._button.style.cursor = 'not-allowed'
-        this._button.style.opacity = '0.6'
-      }
-    } else {
-      this._hiddenInput.disabled = false
-      if (this._button) {
-        this._button.disabled = false
-        this._button.style.cursor = 'pointer'
-        this._button.style.opacity = '1'
-      }
-    }
+    this._hiddenInput.disabled = this.hasAttribute('disabled');
   }
 
   /**
@@ -171,7 +107,6 @@ export class S3FileInput extends globalThis.HTMLElement {
       if (this._hiddenInput) {
         this._hiddenInput.value = ''
       }
-      this._updateDisplay()
     }
   }
 
@@ -261,7 +196,6 @@ export class S3FileInput extends globalThis.HTMLElement {
   changeHandler () {
     this.keys = []
     this.upload = null
-    this._updateDisplay()
     try {
       this.form?.removeEventListener('submit', this.submitHandler.bind(this))
     } catch (error) {
