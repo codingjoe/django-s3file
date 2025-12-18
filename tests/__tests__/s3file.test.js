@@ -26,7 +26,6 @@ describe("getKeyFromResponse", () => {
 describe("S3FileInput", () => {
   test("constructor", () => {
     const input = new s3file.S3FileInput()
-    assert.strictEqual(input.type, "file")
     assert.deepStrictEqual(input.keys, [])
     assert.strictEqual(input.upload, null)
   })
@@ -35,11 +34,48 @@ describe("S3FileInput", () => {
     const form = document.createElement("form")
     document.body.appendChild(form)
     const input = new s3file.S3FileInput()
-    input.addEventListener = mock.fn(input.addEventListener)
     form.addEventListener = mock.fn(form.addEventListener)
     form.appendChild(input)
     assert(form.addEventListener.mock.calls.length === 3)
-    assert(input.addEventListener.mock.calls.length === 1)
+    assert(input._fileInput !== null)
+    assert(input._fileInput.type === "file")
+  })
+
+  test("disconnectedCallback", () => {
+    const form = document.createElement("form")
+    document.body.appendChild(form)
+    const input = new s3file.S3FileInput()
+    form.addEventListener = mock.fn(form.addEventListener)
+    form.appendChild(input)
+    const fileInput = input._fileInput
+    assert(fileInput !== null)
+    // Mock removeEventListener to verify cleanup
+    form.removeEventListener = mock.fn(form.removeEventListener)
+    fileInput.removeEventListener = mock.fn(fileInput.removeEventListener)
+    // Manually call disconnectedCallback since jsdom doesn't trigger it
+    input.disconnectedCallback()
+    assert(form.removeEventListener.mock.calls.length === 3)
+    assert(fileInput.removeEventListener.mock.calls.length === 1)
+    assert(fileInput.parentNode === null)
+    assert(input._fileInput === null)
+  })
+
+  test("connectedCallback prevents duplicate inputs on reconnection", () => {
+    const form = document.createElement("form")
+    document.body.appendChild(form)
+    const input = new s3file.S3FileInput()
+    // First connection
+    form.appendChild(input)
+    assert(input._fileInput !== null)
+    assert(input.querySelectorAll('input[type="file"]').length === 1)
+    // Disconnect and clear state
+    input.disconnectedCallback()
+    // Reconnect - should create a new input since old one was cleaned up
+    input.connectedCallback()
+    assert(input._fileInput !== null)
+    // Check only one input element exists after reconnection
+    const inputElements = input.querySelectorAll('input[type="file"]')
+    assert(inputElements.length === 1)
   })
 
   test("changeHandler", () => {
@@ -56,7 +92,7 @@ describe("S3FileInput", () => {
   test("submitHandler", async () => {
     const form = document.createElement("form")
     document.body.appendChild(form)
-    form.pendingRquests = []
+    form.pendingRequests = []
     form.requestSubmit = mock.fn(form.requestSubmit)
     form.dispatchEvent = mock.fn(form.dispatchEvent)
     const submitButton = document.createElement("button")
@@ -83,7 +119,7 @@ describe("S3FileInput", () => {
     input.uploadHandler()
     console.log(input.upload)
     assert(input.upload)
-    assert(form.pendingRquests)
+    assert(form.pendingRequests)
   })
 
   test("fromDataHandler", () => {

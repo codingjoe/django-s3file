@@ -1,18 +1,86 @@
 import base64
+import html
 import logging
 import pathlib
 import uuid
+from html.parser import HTMLParser
 
 from django.conf import settings
 from django.templatetags.static import static
 from django.utils.functional import cached_property
 from django.utils.html import format_html, html_safe
+from django.utils.safestring import mark_safe
 from storages.utils import safe_join
 
 from s3file.middleware import S3FileMiddleware
 from s3file.storages import get_aws_location, storage
 
 logger = logging.getLogger("s3file")
+
+
+class InputToS3FileRewriter(HTMLParser):
+    """HTML parser that rewrites <input type="file"> to <s3-file> custom elements."""
+
+    def __init__(self):
+        super().__init__()
+        self.output = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "input" and dict(attrs).get("type") == "file":
+            self.output.append("<s3-file")
+            for name, value in attrs:
+                if name != "type":
+                    self.output.append(
+                        f' {name}="{html.escape(value, quote=True)}"'
+                        if value
+                        else f" {name}"
+                    )
+            self.output.append(">")
+        else:
+            self.output.append(self.get_starttag_text())
+
+    def handle_endtag(self, tag):
+        self.output.append(f"</{tag}>")
+
+    def handle_data(self, data):
+        self.output.append(data)
+
+    def handle_startendtag(self, tag, attrs):
+        if tag == "input" and dict(attrs).get("type") == "file":
+            self.output.append("<s3-file")
+            for name, value in attrs:
+                if name != "type":
+                    self.output.append(
+                        f' {name}="{html.escape(value, quote=True)}"'
+                        if value
+                        else f" {name}"
+                    )
+            self.output.append(">")
+        else:
+            self.output.append(self.get_starttag_text())
+
+    def handle_comment(self, data):
+        # Preserve HTML comments in the output
+        self.output.append(f"<!--{data}-->")
+
+    def handle_decl(self, decl):
+        # Preserve declarations such as <!DOCTYPE ...> in the output
+        self.output.append(f"<!{decl}>")
+
+    def handle_pi(self, data):
+        # Preserve processing instructions such as <?xml ...?> in the output
+        self.output.append(f"<?{data}>")
+
+    def handle_entityref(self, name):
+        # Preserve HTML entities like &amp;, &lt;, &gt;
+        self.output.append(f"&{name};")
+
+    def handle_charref(self, name):
+        # Preserve character references like &#39;, &#x27;
+        self.output.append(f"&#{name};")
+
+    def get_html(self):
+        return "".join(self.output)
 
 
 @html_safe
@@ -75,7 +143,6 @@ class S3FileInputMixin:
 
     def build_attrs(self, *args, **kwargs):
         attrs = super().build_attrs(*args, **kwargs)
-        attrs["is"] = "s3-file"
 
         accept = attrs.get("accept")
         response = self.client.generate_presigned_post(
@@ -96,6 +163,13 @@ class S3FileInputMixin:
         defaults.update(attrs)
 
         return defaults
+
+    def render(self, name, value, attrs=None, renderer=None):
+        """Render the widget as a custom element for Safari compatibility."""
+        html_output = str(super().render(name, value, attrs=attrs, renderer=renderer))
+        parser = InputToS3FileRewriter()
+        parser.feed(html_output)
+        return mark_safe(parser.get_html())  # noqa: S308
 
     def get_conditions(self, accept):
         conditions = [
