@@ -55,7 +55,7 @@ describe("S3FileInput", () => {
   test("submitHandler", async () => {
     const form = document.createElement("form")
     document.body.appendChild(form)
-    form.pendingRquests = []
+    form.pendingRequests = []
     form.requestSubmit = mock.fn(form.requestSubmit)
     form.dispatchEvent = mock.fn(form.dispatchEvent)
     const submitButton = document.createElement("button")
@@ -82,7 +82,7 @@ describe("S3FileInput", () => {
     input.uploadHandler()
     console.log(input.upload)
     assert(input.upload)
-    assert(form.pendingRquests)
+    assert(form.pendingRequests)
   })
 
   test("fromDataHandler", () => {
