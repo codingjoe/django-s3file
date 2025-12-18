@@ -86,7 +86,7 @@ class S3FileInputMixin:
         )
 
         defaults = {
-            "data-fields-%s" % key: value for key, value in response["fields"].items()
+            f"data-fields-{key}": value for key, value in response["fields"].items()
         }
         defaults["data-url"] = response["url"]
         # we sign upload location, and will only accept files within the same folder
@@ -110,7 +110,7 @@ class S3FileInputMixin:
         if accept and "," not in accept:
             top_type, sub_type = accept.split("/", 1)
             if sub_type == "*":
-                conditions.append(["starts-with", "$Content-Type", "%s/" % top_type])
+                conditions.append(["starts-with", "$Content-Type", f"{top_type}/"])
             else:
                 conditions.append({"Content-Type": accept})
         else:
