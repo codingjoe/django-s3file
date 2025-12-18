@@ -113,6 +113,11 @@ class TestInputToS3FileRewriter:
         parser.feed('<input type="file" name="test" />')
         assert parser.get_html() == '<s3-file name="test">'
 
+    def test_preserves_non_file_self_closing_tag(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<input type="text" name="test" />')
+        assert parser.get_html() == '<input type="text" name="test" />'
+
     def test_preserves_surrounding_elements(self):
         parser = forms.InputToS3FileRewriter()
         parser.feed('<p><input type="file" name="test"></p>')
