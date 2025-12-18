@@ -145,6 +145,24 @@ class TestInputToS3FileRewriter:
         result = parser.get_html()
         assert result == '<p><s3-file name="test"></p>'
 
+    def test_preserves_html_comments(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<!-- comment --><input type="file" name="test">')
+        result = parser.get_html()
+        assert result == '<!-- comment --><s3-file name="test">'
+
+    def test_preserves_declarations(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<!DOCTYPE html><input type="file" name="test">')
+        result = parser.get_html()
+        assert result == '<!DOCTYPE html><s3-file name="test">'
+
+    def test_preserves_processing_instructions(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<?xml version="1.0"?><input type="file" name="test">')
+        result = parser.get_html()
+        assert result == '<?xml version="1.0"?><s3-file name="test">'
+
 
 @contextmanager
 def wait_for_page_load(driver, timeout=30):
