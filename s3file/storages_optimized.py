@@ -6,10 +6,10 @@ class S3OptimizedUploadStorage(S3Boto3Storage):
     """
     Class for an optimized S3 storage.
 
-    This storage prevents unnecessary operation to copy with the general ``upload_fileobj``
+    This storage prevents unnecessary operation to copy with the general `upload_fileobj`
     command when the object already is a S3 object where the faster copy command can be used.
 
-    The assumption is that ``content`` contains a S3 object from which we can copy.
+    The assumption is that `content` contains a S3 object from which we can copy.
 
     See also discussion here: https://github.com/codingjoe/django-s3file/discussions/126
     """

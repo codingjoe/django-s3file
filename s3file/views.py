@@ -40,7 +40,7 @@ class S3MockView(generic.View):
             return http.HttpResponseForbidden()
 
         key = key.replace("${filename}", file.name)
-        etag = hashlib.md5(file.read()).hexdigest()  # nosec
+        etag = hashlib.md5(file.read()).hexdigest()  # noqa: S324
         file.seek(0)
         key = default_storage.save(key, file)
         return http.HttpResponse(

@@ -17,11 +17,11 @@ license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubu
 
 ## Features
 
--   lightweight: less 200 lines
--   no JavaScript or Python dependencies (no jQuery)
--   easy integration
--   works just like the built-in
--   extendable JavaScript API
+- lightweight: less 200 lines
+- no JavaScript or Python dependencies (no jQuery)
+- easy integration
+- works just like the built-in
+- extendable JavaScript API
 
 ## For the Nerds
 
@@ -81,15 +81,15 @@ Add the S3File app and middleware in your settings:
 # settings.py
 
 INSTALLED_APPS = (
-    '...',
-    's3file',
-    '...',
+    "...",
+    "s3file",
+    "...",
 )
 
 MIDDLEWARE = (
-    '...',
-    's3file.middleware.S3FileMiddleware',
-    '...',
+    "...",
+    "s3file.middleware.S3FileMiddleware",
+    "...",
 )
 ```
 
@@ -150,7 +150,7 @@ to `FileSystemStorage`.
 
 To prevent users from accidentally using the `FileSystemStorage` and the
 insecure S3 dummy backend in production, there is also an additional
-deployment check that will error if you run Django\'s deployment check
+deployment check that will error if you run Django's deployment check
 suite:
 
 ```shell
@@ -177,7 +177,7 @@ uploading the file to S3 and then copying it byte-by-byte to perform a
 move operation just to rename the uploaded object. For large files this
 leads to additional loading times for the user.
 
-That\'s why S3File provides an optimized version of this method at
+That's why S3File provides an optimized version of this method at
 `storages_optimized.S3OptimizedUploadStorage`. It uses the more
 efficient `copy` method from S3, given that we know that we only copy
 from one S3 location to another.
@@ -185,6 +185,7 @@ from one S3 location to another.
 ```python
 from s3file.storages_optimized import S3OptimizedUploadStorage
 
+
 class MyStorage(S3OptimizedUploadStorage):  # Subclass and use like any other storage
-    default_acl = 'private'
+    default_acl = "private"
 ```
