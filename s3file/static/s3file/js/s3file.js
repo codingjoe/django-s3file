@@ -217,15 +217,15 @@ export class S3FileInput extends globalThis.HTMLElement {
   async submitHandler(event) {
     event.preventDefault()
     this.form?.dispatchEvent(new window.CustomEvent("upload"))
-    await Promise.all(this.form?.pendingRquests)
+    await Promise.all(this.form?.pendingRequests)
     this.form?.requestSubmit(event.submitter)
   }
 
   uploadHandler() {
     if (this.files.length && !this.upload) {
       this.upload = this.uploadFiles()
-      this.form.pendingRquests = this.form?.pendingRquests || []
-      this.form.pendingRquests.push(this.upload)
+      this.form.pendingRequests = this.form?.pendingRequests || []
+      this.form.pendingRequests.push(this.upload)
     }
   }
 
