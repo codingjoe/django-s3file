@@ -200,7 +200,7 @@ class TestS3FileInput:
         assert file_input.get_attribute("name") == "file"
         with wait_for_page_load(driver, timeout=10):
             file_input.submit()
-        assert storage.exists("tmp/s3file/%s.txt" % request.node.name)
+        assert storage.exists(f"tmp/s3file/{request.node.name}.txt")
 
         with pytest.raises(NoSuchElementException):
             error = driver.find_element(By.XPATH, "//body[@JSError]")
@@ -221,7 +221,7 @@ class TestS3FileInput:
         assert file_input.get_attribute("name") == "file"
         with wait_for_page_load(driver, timeout=10):
             file_input.submit()
-        assert storage.exists("tmp/s3file/%s.txt" % request.node.name)
+        assert storage.exists(f"tmp/s3file/{request.node.name}.txt")
 
         with pytest.raises(NoSuchElementException):
             error = driver.find_element(By.XPATH, "//body[@JSError]")
@@ -288,12 +288,10 @@ class TestS3FileInput:
         driver.get(live_server + reverse_lazy("upload-multi"))
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
         file_input.send_keys(
-            " \n ".join(
-                [
-                    str(freeze_upload_folder / upload_file),
-                    str(freeze_upload_folder / another_upload_file),
-                ]
-            )
+            " \n ".join([
+                str(freeze_upload_folder / upload_file),
+                str(freeze_upload_folder / another_upload_file),
+            ])
         )
         file_input = driver.find_element(By.XPATH, "//input[@name='other_file']")
         file_input.send_keys(str(freeze_upload_folder / yet_another_upload_file))

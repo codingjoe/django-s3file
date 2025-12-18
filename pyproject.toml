@@ -36,7 +36,10 @@ dependencies = [
   "boto3",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
+dev = [
+  { include-group = "test" },
+]
 test = [
   "pytest >=2.7.3",
   "pytest-cov",
@@ -61,13 +64,49 @@ testpaths = [
 ]
 DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
 
-[tool.isort]
-atomic = true
-line_length = 88
-known_first_party = "s3file, tests"
-include_trailing_comma = true
-default_section = "THIRDPARTY"
-combine_as_imports = true
+[tool.ruff]
+src = ["s3file", "tests"]
+line-length = 88
+indent-width = 4
 
-[tool.pydocstyle]
-add_ignore = "D1"
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+preview = true
+
+[tool.ruff.lint]
+select = [
+    "D", # pydocstyle
+    "E", # pycodestyle errors
+    "EXE", # flake8-executable
+    "F", # pyflakes
+    "I", # isort
+    "PGH", # pygrep-hooks
+    "PT", # flake8-pytest-style
+    "RET", # flake8-return
+    "S", # flake8-bandit
+    "SIM", # flake8-simplify
+    "UP", # pyupgrade
+    "W", # pycodestyle warnings
+]
+
+ignore = ["D1", "E501", "PT012"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S"]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+force-wrap-aliases = true
+known-first-party = ["s3file", "tests"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"

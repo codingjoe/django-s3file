@@ -78,5 +78,5 @@ def filemodel(request, db):
     from tests.testapp.models import FileModel
 
     return FileModel.objects.create(
-        file=ContentFile(request.node.name, "%s.txt" % request.node.name)
+        file=ContentFile(request.node.name, f"{request.node.name}.txt")
     )
