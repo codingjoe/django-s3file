@@ -72,6 +72,54 @@ class TestESM:
         assert str(js) == '<script src="/static/path" type="module"></script>'
 
 
+class TestInputToS3FileRewriter:
+    def test_transforms_file_input(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<input type="file" name="test">')
+        assert parser.get_html() == '<s3-file name="test">'
+
+    def test_preserves_non_file_input(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<input type="text" name="test">')
+        assert parser.get_html() == '<input type="text" name="test">'
+
+    def test_handles_attribute_ordering(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<input name="test" type="file" class="foo">')
+        result = parser.get_html()
+        assert result.startswith('<s3-file')
+        assert 'name="test"' in result
+        assert 'class="foo"' in result
+        assert 'type="file"' not in result
+
+    def test_handles_multiple_attributes(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<input type="file" name="test" accept="image/*" required multiple>')
+        result = parser.get_html()
+        assert result.startswith('<s3-file')
+        assert 'name="test"' in result
+        assert 'accept="image/*"' in result
+        assert 'required' in result
+        assert 'multiple' in result
+
+    def test_escapes_html_entities(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<input type="file" name="test" data-value="test&value">')
+        result = parser.get_html()
+        assert 'data-value="test&amp;value"' in result
+
+    def test_handles_self_closing_tag(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<input type="file" name="test" />')
+        assert parser.get_html() == '<s3-file name="test">'
+
+    def test_preserves_surrounding_elements(self):
+        parser = forms.InputToS3FileRewriter()
+        parser.feed('<p><input type="file" name="test"></p>')
+        result = parser.get_html()
+        assert result == '<p><s3-file name="test"></p>'
+
+
 @contextmanager
 def wait_for_page_load(driver, timeout=30):
     old_page = driver.find_element(By.TAG_NAME, "html")
@@ -184,6 +232,21 @@ class TestS3FileInput:
         widget = ClearableFileInput()
         html = widget.render(name="file", value=None)
         # Check that the output is the s3-file custom element
+        assert html.startswith("<s3-file")
+
+    def test_render_preserves_attributes(self, freeze_upload_folder):
+        widget = ClearableFileInput(attrs={"class": "test-class", "accept": "image/*"})
+        html = widget.render(name="file", value=None)
+        assert html.startswith("<s3-file")
+        assert 'name="file"' in html
+        assert 'class="test-class"' in html
+        assert 'accept="image/*"' in html
+        assert 'type="file"' not in html
+
+    def test_render_excludes_type_attribute(self, freeze_upload_folder):
+        widget = ClearableFileInput()
+        html = widget.render(name="file", value=None)
+        assert 'type="file"' not in html
         assert html.startswith("<s3-file")
 
     @pytest.mark.selenium

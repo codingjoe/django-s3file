@@ -19,30 +19,21 @@ logger = logging.getLogger("s3file")
 
 
 class InputToS3FileRewriter(HTMLParser):
-    """
-    HTML parser that rewrites <input type="file"> tags to <s3-file> custom elements.
-
-    This provides a robust way to transform Django's rendered file input widgets
-    into custom elements, handling various attribute orderings and formats.
-    """
+    """HTML parser that rewrites <input type="file"> to <s3-file> custom elements."""
 
     def __init__(self):
         super().__init__()
         self.output = []
 
-    def _is_file_input(self, attrs):
-        """Check if attributes indicate a file input element."""
-        attrs_dict = dict(attrs)
-        return attrs_dict.get("type") == "file"
-
     def handle_starttag(self, tag, attrs):
-        if tag == "input" and self._is_file_input(attrs):
-            # Replace with s3-file custom element
-            self._write_s3_file_tag(attrs)
-            return
-
-        # For all other tags, preserve as-is
-        self.output.append(self.get_starttag_text())
+        if tag == "input" and dict(attrs).get("type") == "file":
+            self.output.append("<s3-file")
+            for name, value in attrs:
+                if name != "type":
+                    self.output.append(f' {name}="{html.escape(value, quote=True)}"' if value else f" {name}")
+            self.output.append(">")
+        else:
+            self.output.append(self.get_starttag_text())
 
     def handle_endtag(self, tag):
         self.output.append(f"</{tag}>")
@@ -51,32 +42,16 @@ class InputToS3FileRewriter(HTMLParser):
         self.output.append(data)
 
     def handle_startendtag(self, tag, attrs):
-        # For self-closing tags
-        if tag == "input" and self._is_file_input(attrs):
-            # Replace with s3-file custom element
-            self._write_s3_file_tag(attrs)
-            return
-
-        self.output.append(self.get_starttag_text())
-
-    def _write_s3_file_tag(self, attrs):
-        """
-        Write the s3-file opening tag with all attributes except type.
-
-        Note: This creates an opening tag that requires a corresponding closing tag.
-        """
-        self.output.append("<s3-file")
-        for name, value in attrs:
-            if name != "type":  # Skip type attribute
-                if value is None:
-                    self.output.append(f" {name}")
-                else:
-                    escaped_value = html.escape(value, quote=True)
-                    self.output.append(f' {name}="{escaped_value}"')
-        self.output.append(">")
+        if tag == "input" and dict(attrs).get("type") == "file":
+            self.output.append("<s3-file")
+            for name, value in attrs:
+                if name != "type":
+                    self.output.append(f' {name}="{html.escape(value, quote=True)}"' if value else f" {name}")
+            self.output.append(">")
+        else:
+            self.output.append(self.get_starttag_text())
 
     def get_html(self):
-        """Return the transformed HTML."""
         return "".join(self.output)
 
 
