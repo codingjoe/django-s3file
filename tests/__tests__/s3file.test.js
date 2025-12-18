@@ -82,7 +82,7 @@ describe("S3FileInput", () => {
     input.uploadHandler()
     console.log(input.upload)
     assert(input.upload)
-    assert(form.pendingRquests)
+    assert(form.pendingRequests)
   })
 
   test("fromDataHandler", () => {
