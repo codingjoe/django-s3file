@@ -30,13 +30,16 @@ class InputToS3FileRewriter(HTMLParser):
         super().__init__()
         self.output = []
 
+    def _is_file_input(self, attrs):
+        """Check if attributes indicate a file input element."""
+        attrs_dict = dict(attrs)
+        return attrs_dict.get("type") == "file"
+
     def handle_starttag(self, tag, attrs):
-        if tag == "input":
-            attrs_dict = dict(attrs)
-            if attrs_dict.get("type") == "file":
-                # Replace with s3-file custom element
-                self._write_s3_file_tag(attrs)
-                return
+        if tag == "input" and self._is_file_input(attrs):
+            # Replace with s3-file custom element
+            self._write_s3_file_tag(attrs)
+            return
 
         # For all other tags, preserve as-is
         self.output.append(self.get_starttag_text())
@@ -49,17 +52,19 @@ class InputToS3FileRewriter(HTMLParser):
 
     def handle_startendtag(self, tag, attrs):
         # For self-closing tags
-        if tag == "input":
-            attrs_dict = dict(attrs)
-            if attrs_dict.get("type") == "file":
-                # Replace with s3-file custom element
-                self._write_s3_file_tag(attrs)
-                return
+        if tag == "input" and self._is_file_input(attrs):
+            # Replace with s3-file custom element
+            self._write_s3_file_tag(attrs)
+            return
 
         self.output.append(self.get_starttag_text())
 
     def _write_s3_file_tag(self, attrs):
-        """Write the s3-file opening tag with all attributes except type."""
+        """
+        Write the s3-file opening tag with all attributes except type.
+
+        Note: This creates an opening tag that requires a corresponding closing tag.
+        """
         self.output.append("<s3-file")
         for name, value in attrs:
             if name != "type":  # Skip type attribute
