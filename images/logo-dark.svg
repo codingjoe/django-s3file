@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" font-family="Segoe UI, system-ui, sans-serif" viewBox="0 0 1280 640">
+  <circle cx="260" cy="320" r="200" fill="#f1fff7"/>
+  <g fill="none" stroke="#092e20" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="icon icon-tabler icons-tabler-outline icon-tabler-bucket">
+    <path stroke="none" d="M112.5 168.75h300v300h-300z"/>
+    <path stroke-width="25" d="M162.5 256.25a100 50 0 1 0 200 0 100 50 0 1 0-200 0"/>
+    <path stroke-width="25" d="M162.5 256.25c0 8.3 1.1 16.55 3.288 24.563L200 406.25c6.25 18.75 27.987 25 62.5 25s56.25-6.25 62.5-25c4.163-12.5 15.575-54.312 34.213-125.437a93 93 0 0 0 3.287-24.563"/>
+  </g>
+  <text x="243" y="70" fill="#f1fff7" font-size="64" font-weight="bold" transform="matrix(1.6 0 0 1.6 120 120)">
+    Django
+  </text>
+  <text x="240" y="174" fill="#f90" font-size="120" font-weight="bold" transform="matrix(1.6 0 0 1.6 120 120)">
+    S3
+  </text>
+  <text x="390" y="174" fill="#c9d1d9" font-size="120" font-weight="bold" transform="matrix(1.6 0 0 1.6 120 120)">
+    file
+  </text>
+  <text x="244" y="220" fill="#c9d1d9" font-size="24" font-style="italic" transform="matrix(1.6 0 0 1.6 120 120)">
+    Direct file uploads to Amazon S3
+  </text>
+</svg>
