@@ -71,7 +71,7 @@ export class S3FileInput extends globalThis.HTMLElement {
       }
     })
 
-    this._hiddenInput.disabled = this.hasAttribute('disabled');
+    this._hiddenInput.disabled = this.hasAttribute('disabled')
   }
 
   /**
