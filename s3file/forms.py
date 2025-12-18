@@ -30,7 +30,11 @@ class InputToS3FileRewriter(HTMLParser):
             self.output.append("<s3-file")
             for name, value in attrs:
                 if name != "type":
-                    self.output.append(f' {name}="{html.escape(value, quote=True)}"' if value else f" {name}")
+                    self.output.append(
+                        f' {name}="{html.escape(value, quote=True)}"'
+                        if value
+                        else f" {name}"
+                    )
             self.output.append(">")
         else:
             self.output.append(self.get_starttag_text())
@@ -46,7 +50,11 @@ class InputToS3FileRewriter(HTMLParser):
             self.output.append("<s3-file")
             for name, value in attrs:
                 if name != "type":
-                    self.output.append(f' {name}="{html.escape(value, quote=True)}"' if value else f" {name}")
+                    self.output.append(
+                        f' {name}="{html.escape(value, quote=True)}"'
+                        if value
+                        else f" {name}"
+                    )
             self.output.append(">")
         else:
             self.output.append(self.get_starttag_text())
@@ -62,6 +70,7 @@ class InputToS3FileRewriter(HTMLParser):
     def handle_pi(self, data):
         # Preserve processing instructions such as <?xml ...?> in the output
         self.output.append(f"<?{data}>")
+
     def get_html(self):
         return "".join(self.output)
 

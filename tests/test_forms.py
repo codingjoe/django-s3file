@@ -87,20 +87,22 @@ class TestInputToS3FileRewriter:
         parser = forms.InputToS3FileRewriter()
         parser.feed('<input name="test" type="file" class="foo">')
         result = parser.get_html()
-        assert result.startswith('<s3-file')
+        assert result.startswith("<s3-file")
         assert 'name="test"' in result
         assert 'class="foo"' in result
         assert 'type="file"' not in result
 
     def test_handles_multiple_attributes(self):
         parser = forms.InputToS3FileRewriter()
-        parser.feed('<input type="file" name="test" accept="image/*" required multiple>')
+        parser.feed(
+            '<input type="file" name="test" accept="image/*" required multiple>'
+        )
         result = parser.get_html()
-        assert result.startswith('<s3-file')
+        assert result.startswith("<s3-file")
         assert 'name="test"' in result
         assert 'accept="image/*"' in result
-        assert 'required' in result
-        assert 'multiple' in result
+        assert "required" in result
+        assert "multiple" in result
 
     def test_escapes_html_entities(self):
         parser = forms.InputToS3FileRewriter()
