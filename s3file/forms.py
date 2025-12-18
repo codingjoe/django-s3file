@@ -7,6 +7,7 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.utils.functional import cached_property
 from django.utils.html import format_html, html_safe
+from django.utils.safestring import mark_safe
 from storages.utils import safe_join
 
 from s3file.middleware import S3FileMiddleware
@@ -75,7 +76,6 @@ class S3FileInputMixin:
 
     def build_attrs(self, *args, **kwargs):
         attrs = super().build_attrs(*args, **kwargs)
-        attrs["is"] = "s3-file"
 
         accept = attrs.get("accept")
         response = self.client.generate_presigned_post(
@@ -96,6 +96,14 @@ class S3FileInputMixin:
         defaults.update(attrs)
 
         return defaults
+
+    def render(self, name, value, attrs=None, renderer=None):
+        """Render the widget as a custom element for Safari compatibility."""
+        return mark_safe(  # noqa: S308
+            str(super().render(name, value, attrs=attrs, renderer=renderer)).replace(
+                f'<input type="{self.input_type}"', "<s3-file"
+            )
+        )
 
     def get_conditions(self, accept):
         conditions = [

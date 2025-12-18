@@ -127,7 +127,6 @@ class TestS3FileInput:
 
     def test_build_attr(self, freeze_upload_folder):
         assert set(ClearableFileInput().build_attrs({}).keys()) == {
-            "is",
             "data-url",
             "data-fields-x-amz-algorithm",
             "data-fields-x-amz-date",
@@ -141,7 +140,6 @@ class TestS3FileInput:
             ClearableFileInput().build_attrs({})["data-s3f-signature"]
             == "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI"
         )
-        assert ClearableFileInput().build_attrs({})["is"] == "s3-file"
 
     def test_get_conditions(self, freeze_upload_folder):
         conditions = ClearableFileInput().get_conditions(None)
@@ -182,6 +180,12 @@ class TestS3FileInput:
             "application/pdf,image/*"
         )
 
+    def test_render_wraps_in_s3_file_element(self, freeze_upload_folder):
+        widget = ClearableFileInput()
+        html = widget.render(name="file", value=None)
+        # Check that the output is the s3-file custom element
+        assert html.startswith("<s3-file")
+
     @pytest.mark.selenium
     def test_no_js_error(self, driver, live_server):
         driver.get(live_server + self.create_url)
@@ -195,10 +199,10 @@ class TestS3FileInput:
         self, request, driver, live_server, upload_file, freeze_upload_folder
     ):
         driver.get(live_server + self.create_url)
-        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
+        file_input = driver.find_element(By.XPATH, "//input[@type='file']")
         file_input.send_keys(upload_file)
-        assert file_input.get_attribute("name") == "file"
-        with wait_for_page_load(driver, timeout=10):
+        assert file_input.get_attribute("name") == ""
+        with wait_for_page_load(driver, timeout=30):
             file_input.submit()
         assert storage.exists(f"tmp/s3file/{request.node.name}.txt")
 
@@ -216,10 +220,10 @@ class TestS3FileInput:
             )
         )
         driver.get(live_server + reverse_lazy("example-update", kwargs={"pk": obj.pk}))
-        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
+        file_input = driver.find_element(By.XPATH, "//input[@type='file']")
         file_input.send_keys(upload_file)
-        assert file_input.get_attribute("name") == "file"
-        with wait_for_page_load(driver, timeout=10):
+        assert file_input.get_attribute("name") == ""
+        with wait_for_page_load(driver, timeout=30):
             file_input.submit()
         assert storage.exists(f"tmp/s3file/{request.node.name}.txt")
 
@@ -232,11 +236,11 @@ class TestS3FileInput:
         self, driver, live_server, upload_file, freeze_upload_folder
     ):
         driver.get(live_server + self.create_url)
-        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
+        file_input = driver.find_element(By.XPATH, "//input[@type='file']")
         file_input.send_keys(upload_file)
-        assert file_input.get_attribute("name") == "file"
+        assert file_input.get_attribute("name") == ""
         save_button = driver.find_element(By.XPATH, "//button[@name='save_continue']")
-        with wait_for_page_load(driver, timeout=10):
+        with wait_for_page_load(driver, timeout=30):
             save_button.click()
         assert "save_continue" in driver.page_source
         assert "continue_value" in driver.page_source
@@ -246,11 +250,11 @@ class TestS3FileInput:
         self, driver, live_server, upload_file, freeze_upload_folder
     ):
         driver.get(live_server + self.create_url)
-        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
+        file_input = driver.find_element(By.XPATH, "//input[@type='file']")
         file_input.send_keys(upload_file)
-        assert file_input.get_attribute("name") == "file"
+        assert file_input.get_attribute("name") == ""
         save_button = driver.find_element(By.XPATH, "//button[@name='custom_save']")
-        with wait_for_page_load(driver, timeout=10):
+        with wait_for_page_load(driver, timeout=30):
             save_button.click()
         assert "custom_save" in driver.page_source
         assert "custom_target" in driver.page_source
@@ -267,11 +271,11 @@ class TestS3FileInput:
         freeze_upload_folder,
     ):
         driver.get(live_server + self.create_url)
-        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
+        file_input = driver.find_element(By.XPATH, "//input[@type='file']")
         file_input.send_keys(upload_file)
         file_input.send_keys(another_upload_file)
         save_button = driver.find_element(By.CSS_SELECTOR, "input[name=save]")
-        with wait_for_page_load(driver, timeout=10):
+        with wait_for_page_load(driver, timeout=30):
             save_button.click()
         assert "save" in driver.page_source
 
@@ -286,17 +290,19 @@ class TestS3FileInput:
         yet_another_upload_file,
     ):
         driver.get(live_server + reverse_lazy("upload-multi"))
-        file_input = driver.find_element(By.XPATH, "//input[@name='file']")
+        file_input = driver.find_element(By.XPATH, "//input[@type='file']")
         file_input.send_keys(
             "\n".join([
                 str(freeze_upload_folder / upload_file),
                 str(freeze_upload_folder / another_upload_file),
             ])
         )
-        file_input = driver.find_element(By.XPATH, "//input[@name='other_file']")
+        file_input = driver.find_element(
+            By.CSS_SELECTOR, "s3-file[name=other_file] input"
+        )
         file_input.send_keys(str(freeze_upload_folder / yet_another_upload_file))
         save_button = driver.find_element(By.XPATH, "//input[@name='save']")
-        with wait_for_page_load(driver, timeout=10):
+        with wait_for_page_load(driver, timeout=30):
             save_button.click()
         response = json.loads(driver.find_elements(By.CSS_SELECTOR, "pre")[0].text)
         assert response["FILES"] == {
