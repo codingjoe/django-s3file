@@ -193,7 +193,8 @@ class S3FileInputMixin:
         return str(
             pathlib.PurePosixPath(
                 self.upload_path,
-                base64.urlsafe_b64encode(uuid.uuid4().bytes)
+                base64
+                .urlsafe_b64encode(uuid.uuid4().bytes)
                 .decode("utf-8")
                 .rstrip("=\n"),
             )
