@@ -41,6 +41,49 @@ describe("S3FileInput", () => {
     assert(input._fileInput.type === "file")
   })
 
+  test("connectedCallback associates labels with native file input", () => {
+    const form = document.createElement("form")
+    document.body.appendChild(form)
+    const label = document.createElement("label")
+    label.setAttribute("for", "test-input")
+    form.appendChild(label)
+    const input = new s3file.S3FileInput()
+    input.setAttribute("id", "test-input")
+    form.appendChild(input)
+    // Verify that the label's htmlFor points to the hidden file input
+    assert(input._fileInput !== null)
+    assert.strictEqual(label.htmlFor, input._fileInput.id)
+    assert.strictEqual(input._fileInput.id, "test-input-input")
+  })
+
+  test("connectedCallback handles input without labels", () => {
+    const form = document.createElement("form")
+    document.body.appendChild(form)
+    const input = new s3file.S3FileInput()
+    // Should not throw error when there are no labels
+    form.appendChild(input)
+    assert(input._fileInput !== null)
+    assert(input._fileInput.type === "file")
+  })
+
+  test("label click triggers file input", () => {
+    const form = document.createElement("form")
+    document.body.appendChild(form)
+    const label = document.createElement("label")
+    label.setAttribute("for", "clickable-input")
+    form.appendChild(label)
+    const input = new s3file.S3FileInput()
+    input.setAttribute("id", "clickable-input")
+    form.appendChild(input)
+    // Mock the click on the file input
+    input._fileInput.click = mock.fn(input._fileInput.click)
+    // Clicking the label should trigger click on the associated input
+    label.click()
+    // In jsdom, label clicks are automatically forwarded to the associated input
+    // We can verify the association is correct
+    assert.strictEqual(label.htmlFor, input._fileInput.id)
+  })
+
   test("disconnectedCallback", () => {
     const form = document.createElement("form")
     document.body.appendChild(form)

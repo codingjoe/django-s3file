@@ -40,6 +40,7 @@ export class S3FileInput extends globalThis.HTMLElement {
     // Create a hidden file input for the file picker functionality
     this._fileInput = document.createElement("input")
     this._fileInput.type = "file"
+    this._fileInput.id = `${this.id || "s3file"}-input`
 
     // Sync attributes to hidden input
     this._syncAttributesToHiddenInput()
@@ -56,6 +57,10 @@ export class S3FileInput extends globalThis.HTMLElement {
 
     // Listen for file selection on hidden input
     this._fileInput.addEventListener("change", this._changeHandler)
+
+    for (const label of this.labels || []) {
+      label.htmlFor = this._fileInput.id
+    }
 
     // Append elements
     this.appendChild(this._fileInput)
@@ -144,6 +149,12 @@ export class S3FileInput extends globalThis.HTMLElement {
 
   get form() {
     return this._internals?.form || this.closest("form")
+  }
+
+  get labels() {
+    return (
+      this._internals?.labels || document.querySelectorAll(`label[for="${this.id}"]`)
+    )
   }
 
   get disabled() {
