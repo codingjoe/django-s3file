@@ -35,7 +35,7 @@ class InputToS3FileRewriter(HTMLParser):
                         if value
                         else f" {name}"
                     )
-            self.output.append(">")
+            self.output.append("></s3-file>")
         else:
             self.output.append(self.get_starttag_text())
 
