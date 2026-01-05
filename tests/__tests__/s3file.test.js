@@ -7,6 +7,9 @@ afterEach(() => {
   mock.restoreAll()
 })
 
+// https://github.com/modosc/global-jsdom/issues/440
+globalThis = globalThis.window
+
 describe("getKeyFromResponse", () => {
   test("returns key", () => {
     const responseText = `<?xml version="1.0" encoding="UTF-8"?>
@@ -98,7 +101,7 @@ describe("S3FileInput", () => {
     const submitButton = document.createElement("button")
     form.appendChild(submitButton)
     submitButton.setAttribute("type", "submit")
-    const event = new globalThis.SubmitEvent("submit", { submitter: submitButton })
+    const event = new SubmitEvent("submit", { submitter: submitButton })
     const input = new s3file.S3FileInput()
     form.appendChild(input)
     await input.submitHandler(event)
@@ -112,18 +115,17 @@ describe("S3FileInput", () => {
     const input = new s3file.S3FileInput()
     form.appendChild(input)
     Object.defineProperty(input, "files", {
-      get: () => [new globalThis.File([""], "file.txt")],
+      get: () => [new File([""], "file.txt")],
     })
     assert(!input.upload)
     assert.strictEqual(input.files.length, 1)
     input.uploadHandler()
-    console.info(input.upload)
     assert(input.upload)
     assert(form.pendingRequests)
   })
 
   test("fromDataHandler", () => {
-    const event = new globalThis.CustomEvent("formdata", { formData: new FormData() })
+    const event = new CustomEvent("formdata", { formData: new FormData() })
     const form = document.createElement("form")
     document.body.appendChild(form)
     const input = new s3file.S3FileInput()
@@ -143,7 +145,7 @@ describe("S3FileInput", () => {
     input.setAttribute("data-fields-policy", "policy")
     form.appendChild(input)
     Object.defineProperty(input, "files", {
-      get: () => [new globalThis.File([""], "file.txt")],
+      get: () => [new File([""], "file.txt")],
     })
     const responseText = `<?xml version="1.0" encoding="UTF-8"?>
       <PostResponse>
@@ -153,10 +155,10 @@ describe("S3FileInput", () => {
       <ETag>"a38155039ec348f97dfd63da4cb2619d"</ETag>
       </PostResponse>`
     const response = { status: 201, text: async () => responseText }
-    globalThis.fetch = mock.fn(async () => response)
+    fetch = mock.fn(async () => response)
     assert(input.files.length === 1)
     await input.uploadFiles()
-    assert(globalThis.fetch.mock.calls.length === 1)
+    assert(fetch.mock.calls.length === 1)
     assert.deepStrictEqual(input.keys, ["tmp/s2file/some file.jpeg"])
   })
 
@@ -166,13 +168,13 @@ describe("S3FileInput", () => {
     const input = new s3file.S3FileInput()
     form.appendChild(input)
     Object.defineProperty(input, "files", {
-      get: () => [new globalThis.File([""], "file.txt")],
+      get: () => [new File([""], "file.txt")],
     })
     const response = { status: 400, statusText: "Bad Request" }
-    globalThis.fetch = mock.fn(async () => response)
+    fetch = mock.fn(async () => response)
     assert(input.files.length === 1)
     await input.uploadFiles()
-    assert(globalThis.fetch.mock.calls.length === 1)
+    assert(fetch.mock.calls.length === 1)
     assert.deepStrictEqual(input.keys, [])
     assert.strictEqual(input.validationMessage, "Bad Request")
   })
@@ -183,14 +185,14 @@ describe("S3FileInput", () => {
     const input = new s3file.S3FileInput()
     form.appendChild(input)
     Object.defineProperty(input, "files", {
-      get: () => [new globalThis.File([""], "file.txt")],
+      get: () => [new File([""], "file.txt")],
     })
-    globalThis.fetch = mock.fn(async () => {
+    fetch = mock.fn(async () => {
       throw new Error("Network Error")
     })
     assert(input.files.length === 1)
     await input.uploadFiles()
-    assert(globalThis.fetch.mock.calls.length === 1)
+    assert(fetch.mock.calls.length === 1)
     assert.deepStrictEqual(input.keys, [])
     assert.strictEqual(input.validationMessage, "Error: Network Error")
   })

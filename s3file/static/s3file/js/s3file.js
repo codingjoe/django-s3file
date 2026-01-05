@@ -5,7 +5,7 @@
  * @return {string} - Key from response.
  */
 export function getKeyFromResponse(responseText) {
-  const xml = new globalThis.DOMParser().parseFromString(responseText, "text/xml")
+  const xml = new DOMParser().parseFromString(responseText, "text/xml")
   return decodeURI(xml.querySelector("Key").innerHTML)
 }
 
@@ -15,7 +15,7 @@ export function getKeyFromResponse(responseText) {
  *
  * @extends HTMLElement
  */
-export class S3FileInput extends globalThis.HTMLElement {
+export class S3FileInput extends HTMLElement {
   static passThroughAttributes = ["accept", "required", "multiple", "class", "style"]
   constructor() {
     super()
@@ -288,7 +288,7 @@ export class S3FileInput extends globalThis.HTMLElement {
   async uploadFiles() {
     this.keys = []
     for (const file of this.files) {
-      const s3Form = new globalThis.FormData()
+      const s3Form = new FormData()
       for (const attr of this.attributes) {
         let name = attr.name
 
@@ -339,4 +339,4 @@ export class S3FileInput extends globalThis.HTMLElement {
   }
 }
 
-globalThis.customElements.define("s3-file", S3FileInput)
+customElements.define("s3-file", S3FileInput)
