@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from django.core.files.base import ContentFile
 from django.utils.encoding import force_str
+from django.utils.text import slugify
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
@@ -40,7 +41,11 @@ def freeze_upload_folder(monkeypatch):
 
 @pytest.fixture
 def upload_file(request, freeze_upload_folder):
-    path = Path(tempfile.mkdtemp()) / freeze_upload_folder / f"{request.node.name}.txt"
+    path = (
+        Path(tempfile.mkdtemp())
+        / freeze_upload_folder
+        / f"{slugify(request.node.name)}.txt"
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w") as f:
         f.write(request.node.name)
@@ -52,7 +57,7 @@ def another_upload_file(request, freeze_upload_folder):
     path = (
         Path(tempfile.mkdtemp())
         / freeze_upload_folder
-        / f"another_{request.node.name}.txt"
+        / f"another_{slugify(request.node.name)}.txt"
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w") as f:
@@ -65,7 +70,7 @@ def yet_another_upload_file(request, freeze_upload_folder):
     path = (
         Path(tempfile.mkdtemp())
         / freeze_upload_folder
-        / f"yet_another_{request.node.name}.txt"
+        / f"yet_another_{slugify(request.node.name)}.txt"
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w") as f:

@@ -153,6 +153,51 @@ to your CORS policy.
 ]
 ```
 
+### Progress Bar
+
+S3File does emit progress signals that can be used to display some kind
+of progress bar. Signals named `progress` are emitted for both each
+individual file input as well as for the form as a whole.
+
+The progress signal carries the following details:
+
+```javascript
+console.debug(event.detail)
+
+{
+    progress: 0.4725307607171312  // total upload progress of either a form or single input
+    loaded: 1048576  // total upload progress of either a form or single input
+    total: 2219064  // total bytes to upload
+    currentFile: File {…}  // file object
+    currentFileName: "text.txt"  // file name of the file currently uploaded
+    currentFileProgress: 0.47227834703299176  // upload progress of that file
+    originalEvent: ProgressEvent {…} // the original XHR onprogress event
+}
+```
+
+The following example implements a Boostrap progress bar for upload
+progress of an entire form.
+
+```html
+<div class="progress">
+  <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+</div>
+```
+
+```javascript
+const form = document.querySelector('form')
+const progressBar = document.querySelector('progress-bar')
+
+form.addEventListener('progress', (event) => {
+    // event.detail.progress is a value between 0 and 1
+    const percent = Math.round(event.detail.progress * 100)
+
+    progressBar.setAttribute('style', `width: ${percent}%`)
+    progressBar.setAttribute('aria-valuenow', percent)
+    progressBar.innerText = `${percent}%`
+})
+```
+
 ### Using S3File in development
 
 Using S3File in development can be helpful especially if you want to use
