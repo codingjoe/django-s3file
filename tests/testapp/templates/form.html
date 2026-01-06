@@ -2,7 +2,7 @@
 {% load static %}
 <html lang="en">
 <head>
-    <title>Form</title>
+    <title>Test Form</title>
     <script type="text/javascript">
         globalThis.onerror = function (msg) {
             document.getElementById('body').setAttribute('JSError', msg)
@@ -16,8 +16,32 @@
     {{ form }}
     <input type="submit" name="save" value="Save"/>
     <button type="submit" name="save_continue" value="continue_value">Save &amp; continue</button>
-    <button type="submit" name="custom_save" value="custom_target" formaction="{% url 'example-create' %}?foo=bar">Save &amp; continue</button>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0"
+             aria-valuemax="100">0%
+        </div>
+    </div>
 </form>
 {{ form.media.js }}
+<script type="module">
+    const form = document.getElementsByTagName('form')[0]
+    const progressBar = document.getElementsByClassName('progress-bar')[0]
+
+    const input = document.createElement('input')
+    input.type = 'hidden'
+    input.name = 'progress'
+    form.appendChild(input)
+
+    form.addEventListener('progress', (event) => {
+        // event.detail.progress is a value between 0 and 1
+        const percent = Math.round(event.detail.progress * 100)
+
+        progressBar.setAttribute('style', 'width:' + percent + '%')
+        progressBar.setAttribute('aria-valuenow', percent)
+        progressBar.innerText = percent + '%'
+
+        input.value = event.detail.progress
+    })
+</script>
 </body>
 </html>

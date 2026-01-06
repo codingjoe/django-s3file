@@ -20,6 +20,10 @@ repos:
     rev: 1.29.1
     hooks:
       - id: django-upgrade
+  - repo: https://github.com/codingjoe/esupgrade
+    rev: 2025.9.0
+    hooks:
+      - id: esupgrade
   - repo: https://github.com/hukkin/mdformat
     rev: 1.0.0
     hooks:
