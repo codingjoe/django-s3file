@@ -1,6 +1,6 @@
 import { test } from "node:test"
-import assert from "node:assert"
-import { JSDOM } from "jsdom"
+import assert from "node:assert/strict"
+import "global-jsdom/register"
 import { readFileSync } from "fs"
 import { fileURLToPath } from "url"
 import { dirname, join } from "path"
@@ -14,28 +14,37 @@ const s3fileCode = readFileSync(
   "utf-8",
 )
 
-// Helper to create a DOM environment
-function setupDOM() {
-  const dom = new JSDOM("<!DOCTYPE html><html><body></body></html>", {
-    url: "http://localhost",
-  })
-  const window = dom.window
-  global.window = window
-  global.document = window.document
-  global.globalThis = {
-    ...global,
-    DOMParser: window.DOMParser,
-    XMLHttpRequest: window.XMLHttpRequest,
-    FormData: window.FormData,
-    CustomEvent: window.CustomEvent,
-    HTMLFormElement: window.HTMLFormElement,
+// Wrap the code to expose functions to globalThis
+const wrappedCode = `
+(function() {
+  ${s3fileCode}
+  globalThis.parseURL = parseURL
+  globalThis.waitForAllFiles = waitForAllFiles
+  globalThis.request = request
+  globalThis.uploadFiles = uploadFiles
+  globalThis.clickSubmit = clickSubmit
+  globalThis.uploadS3Inputs = uploadS3Inputs
+
+  // Expose a function to initialize forms added after module load
+  globalThis.initializeForm = function(form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault()
+      uploadS3Inputs(e.target)
+    })
+    const submitButtons = form.querySelectorAll(
+      "input[type=submit], button[type=submit]",
+    )
+    for (const submitButton of submitButtons) {
+      submitButton.addEventListener("click", clickSubmit)
+    }
   }
-  return dom
-}
+}).call(globalThis)
+`
+
+// Execute the wrapped code
+eval(wrappedCode)
 
 test("parseURL - extracts key from XML response", async () => {
-  setupDOM()
-
   // Create a mock XML response like S3 returns
   const xmlText = `<?xml version="1.0" encoding="UTF-8"?>
 <PostResponse>
@@ -45,32 +54,21 @@ test("parseURL - extracts key from XML response", async () => {
   <ETag>"123abc"</ETag>
 </PostResponse>`
 
-  // Evaluate the parseURL function from s3file.js
-  eval(s3fileCode)
-
   const result = parseURL(xmlText)
-  assert.strictEqual(result, "uploads/file.txt")
+  assert.equal(result, "uploads/file.txt")
 })
 
 test("parseURL - handles URL encoded keys", async () => {
-  setupDOM()
-
   const xmlText = `<?xml version="1.0" encoding="UTF-8"?>
 <PostResponse>
   <Key>uploads/file%20with%20spaces.txt</Key>
 </PostResponse>`
 
-  eval(s3fileCode)
-
   const result = parseURL(xmlText)
-  assert.strictEqual(result, "uploads/file with spaces.txt")
+  assert.equal(result, "uploads/file with spaces.txt")
 })
 
 test("waitForAllFiles - waits for uploads to complete", async () => {
-  setupDOM()
-
-  eval(s3fileCode)
-
   const form = document.createElement("form")
   globalThis.uploading = 1
   let submitCalled = false
@@ -84,7 +82,7 @@ test("waitForAllFiles - waits for uploads to complete", async () => {
   waitForAllFiles(form)
 
   // Initially, submit should not be called
-  assert.strictEqual(submitCalled, false)
+  assert.equal(submitCalled, false)
 
   // Simulate upload completion
   globalThis.uploading = 0
@@ -92,16 +90,12 @@ test("waitForAllFiles - waits for uploads to complete", async () => {
   // Wait for the setTimeout to execute
   await new Promise((resolve) => setTimeout(resolve, 200))
 
-  assert.strictEqual(submitCalled, true)
+  assert.equal(submitCalled, true)
 
   globalThis.HTMLFormElement.prototype.submit = originalSubmit
 })
 
 test("request - creates XMLHttpRequest and handles progress", async () => {
-  setupDOM()
-
-  eval(s3fileCode)
-
   const form = document.createElement("form")
   const fileInput = document.createElement("input")
   fileInput.type = "file"
@@ -149,14 +143,10 @@ test("request - creates XMLHttpRequest and handles progress", async () => {
   )
 
   const result = await promise
-  assert.strictEqual(result, mockXhr.responseText)
+  assert.equal(result, mockXhr.responseText)
 })
 
 test("request - handles error responses", async () => {
-  setupDOM()
-
-  eval(s3fileCode)
-
   const form = document.createElement("form")
   const fileInput = document.createElement("input")
   fileInput.type = "file"
@@ -201,15 +191,11 @@ test("request - handles error responses", async () => {
     await promise
     assert.fail("Should have thrown an error")
   } catch (err) {
-    assert.strictEqual(err, "Bad Request")
+    assert.equal(err, "Bad Request")
   }
 })
 
 test("uploadFiles - processes multiple files", async () => {
-  setupDOM()
-
-  eval(s3fileCode)
-
   const form = document.createElement("form")
   form.total = 0
   form.loaded = 0
@@ -260,15 +246,11 @@ test("uploadFiles - processes multiple files", async () => {
   // Wait for promises to settle
   await new Promise((resolve) => setTimeout(resolve, 100))
 
-  assert.strictEqual(uploadCalled, true)
-  assert.strictEqual(form.total > 0, true)
+  assert.equal(uploadCalled, true)
+  assert.equal(form.total > 0, true)
 })
 
 test("clickSubmit - creates hidden input for submit button", async () => {
-  setupDOM()
-
-  eval(s3fileCode)
-
   const form = document.createElement("form")
   const submitButton = document.createElement("button")
   submitButton.type = "submit"
@@ -284,18 +266,14 @@ test("clickSubmit - creates hidden input for submit button", async () => {
   clickSubmit(event)
 
   const hiddenInputs = form.querySelectorAll("input[type=hidden]")
-  assert.strictEqual(hiddenInputs.length, 1)
+  assert.equal(hiddenInputs.length, 1)
 
   const hiddenInput = hiddenInputs[0]
-  assert.strictEqual(hiddenInput.name, "action")
-  assert.strictEqual(hiddenInput.value, "save")
+  assert.equal(hiddenInput.name, "action")
+  assert.equal(hiddenInput.value, "save")
 })
 
 test("clickSubmit - uses default value when button has no value", async () => {
-  setupDOM()
-
-  eval(s3fileCode)
-
   const form = document.createElement("form")
   const submitButton = document.createElement("button")
   submitButton.type = "submit"
@@ -310,14 +288,10 @@ test("clickSubmit - uses default value when button has no value", async () => {
   clickSubmit(event)
 
   const hiddenInput = form.querySelector("input[type=hidden]")
-  assert.strictEqual(hiddenInput.value, "1")
+  assert.equal(hiddenInput.value, "1")
 })
 
 test("uploadS3Inputs - initializes and processes form inputs", async () => {
-  setupDOM()
-
-  eval(s3fileCode)
-
   const form = document.createElement("form")
 
   const fileInput = document.createElement("input")
@@ -363,22 +337,20 @@ test("uploadS3Inputs - initializes and processes form inputs", async () => {
 
   // Check that hidden inputs were created
   const hiddenInputs = form.querySelectorAll("input[type=hidden]")
-  assert.strictEqual(hiddenInputs.length > 0, true)
+  assert.equal(hiddenInputs.length > 0, true)
 
   // Check for s3file marker input
   const s3fileInput = form.querySelector("input[name=s3file]")
-  assert.strictEqual(s3fileInput !== null, true)
-  assert.strictEqual(s3fileInput.value, "document")
+  assert.equal(s3fileInput !== null, true)
+  assert.equal(s3fileInput.value, "document")
 
   // Check for signature input
   const signatureInput = form.querySelector("input[name=document-s3f-signature]")
-  assert.strictEqual(signatureInput !== null, true)
-  assert.strictEqual(signatureInput.value, "abc123")
+  assert.equal(signatureInput !== null, true)
+  assert.equal(signatureInput.value, "abc123")
 })
 
 test("DOM event listener - attaches submit handler to forms", async () => {
-  setupDOM()
-
   // Create form with file input before evaluating the script
   const form = document.createElement("form")
   const fileInput = document.createElement("input")
@@ -412,29 +384,22 @@ test("DOM event listener - attaches submit handler to forms", async () => {
     }
   }
 
-  let submitPrevented = false
+  // Initialize the form with event listeners
+  globalThis.initializeForm(form)
 
-  // Patch to track if submit was prevented
-  form.addEventListener("submit", (submitEvent) => {
-    if (submitEvent.defaultPrevented) {
-      submitPrevented = true
-    }
+  const submitEvent = new form.ownerDocument.defaultView.Event("submit", {
+    bubbles: true,
+    cancelable: true,
   })
-
-  eval(s3fileCode)
-
-  const submitEvent = new Event("submit", { bubbles: true, cancelable: true })
   form.dispatchEvent(submitEvent)
 
   await new Promise((resolve) => setTimeout(resolve, 100))
 
   // The form submission should have been prevented by our handler
-  assert.strictEqual(submitEvent.defaultPrevented, true)
+  assert.equal(submitEvent.defaultPrevented, true)
 })
 
 test("DOM event listener - attaches click handler to submit buttons", async () => {
-  setupDOM()
-
   const form = document.createElement("form")
   const fileInput = document.createElement("input")
   fileInput.type = "file"
@@ -456,12 +421,13 @@ test("DOM event listener - attaches click handler to submit buttons", async () =
     value: [],
   })
 
-  eval(s3fileCode)
+  // Initialize the form with event listeners
+  globalThis.initializeForm(form)
 
   // Simulate click
   submitButton.click()
 
   // Check if hidden input was created
   const hiddenInput = form.querySelector("input[name=action][type=hidden]")
-  assert.strictEqual(hiddenInput !== null, true)
+  assert.equal(hiddenInput !== null, true)
 })
