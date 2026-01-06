@@ -175,7 +175,7 @@ console.debug(event.detail)
 }
 ```
 
-The following example implements a Boostrap progress bar for upload
+The following example implements a Bootstrap progress bar for upload
 progress of an entire form.
 
 ```html
@@ -186,7 +186,7 @@ progress of an entire form.
 
 ```javascript
 const form = document.querySelector('form')
-const progressBar = document.querySelector('progress-bar')
+const progressBar = document.querySelector('.progress-bar')
 
 form.addEventListener('progress', (event) => {
     // event.detail.progress is a value between 0 and 1
