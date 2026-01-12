@@ -14,9 +14,9 @@ function waitForAllFiles(form) {
   }
 }
 
-function request(method, url, data, fileInput, file, form) {
+async function request(method, url, data, fileInput, file, form) {
   file.loaded = 0
-  return new Promise((resolve, reject) => {
+  return await new Promise((resolve, reject) => {
     const xhr = new globalThis.XMLHttpRequest()
 
     xhr.onload = () => {
