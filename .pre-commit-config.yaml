@@ -21,7 +21,7 @@ repos:
     hooks:
       - id: django-upgrade
   - repo: https://github.com/codingjoe/esupgrade
-    rev: 2025.14.3
+    rev: 2025.15.0
     hooks:
       - id: esupgrade
   - repo: https://github.com/hukkin/mdformat
