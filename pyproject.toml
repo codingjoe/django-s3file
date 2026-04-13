@@ -42,7 +42,7 @@ dev = [
   { include-group = "test" },
 ]
 test = [
-  "pytest >=2.7.3",
+  "pytest >=9.0.3",
   "pytest-cov",
   "pytest-django",
   "selenium",
