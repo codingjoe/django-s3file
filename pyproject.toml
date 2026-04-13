@@ -32,7 +32,7 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-  "django>=4.2",
+  "django>=5.2.13",
   "django-storages>=1.6",
   "boto3",
 ]
