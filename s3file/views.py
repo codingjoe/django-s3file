@@ -52,4 +52,5 @@ class S3MockView(generic.View):
             f'<ETag>"{etag}"</ETag>'
             "</PostResponse>",
             status=success_action_status,
+            content_type="application/xml",
         )

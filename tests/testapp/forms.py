@@ -40,6 +40,7 @@ class MultipleFileField(forms.FileField):
 
 class MultiUploadForm(forms.Form):
     file = MultipleFileField(
-        required=False, widget=MultipleFileInput(attrs={"multiple": True})
+        required=False,
+        widget=MultipleFileInput(attrs={"multiple": True, "webkitdirectory": True}),
     )
     other_file = forms.FileField(required=False)

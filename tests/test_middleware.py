@@ -1,7 +1,8 @@
 import os
+import pathlib
 
 import pytest
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, SuspiciousFileOperation
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -21,6 +22,174 @@ class TestS3FileMiddleware:
         )
         file = next(files)
         assert file.read() == content
+
+    def test_get_files_from_storage__relative_path_traversal_windows(
+        self, freeze_upload_folder, caplog
+    ):
+        """
+        Relative path traversal into storage-root using a Windows relative path.
+
+        See also: https://github.com/codingjoe/django-s3file/security/advisories/GHSA-67qg-7284-2277
+        """
+        secret_content = b"secret"
+        cooked_key = r"tmp/s3file/..\..\secret"
+        storage.save("secret", ContentFile(secret_content))
+        files = S3FileMiddleware.get_files_from_storage(
+            [os.path.join(get_aws_location(), cooked_key)],
+            "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
+        )
+        with pytest.raises(
+            SuspiciousFileOperation,
+            match="Path traversal attempt, or file not in the upload folder.",
+        ):
+            next(files)
+
+    def test_get_files_from_storage__relative_path_traversal__posix(
+        self, freeze_upload_folder, caplog
+    ):
+        """
+        Relative path traversal into storage-root using a POSIX relative path.
+
+        See also: https://github.com/codingjoe/django-s3file/security/advisories/GHSA-67qg-7284-2277
+        """
+        secret_content = b"secret"
+        cooked_key = "tmp/s3file/../../secret"
+        storage.save("secret", ContentFile(secret_content))
+        files = S3FileMiddleware.get_files_from_storage(
+            [os.path.join(get_aws_location(), cooked_key)],
+            "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
+        )
+        with pytest.raises(
+            SuspiciousFileOperation,
+            match="No upload folder, or file in the root of the upload folder.",
+        ):
+            next(files)
+
+    def test_get_files_from_storage__illegal_filename(self):
+        """
+        Test that relative path traversal is prevented in get_files_from_storage.
+
+        See also: https://github.com/codingjoe/django-s3file/security/advisories/GHSA-67qg-7284-2277
+        """
+        cooked_key = r"tmp/s3file/something/."
+        files = S3FileMiddleware.get_files_from_storage(
+            [os.path.join(get_aws_location(), cooked_key)],
+            "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
+        )
+        with pytest.raises(
+            SuspiciousFileOperation, match="No filename, or dictionary provided."
+        ):
+            next(files)
+
+    def test_get_files_from_storage__illegal_location(self):
+        """
+        Relative path traversal into the S3 location w/ leaked valid signature.
+
+        See also: https://github.com/codingjoe/django-s3file/security/advisories/GHSA-67qg-7284-2277
+        """
+        secret_content = b"secret"
+        cooked_key = "tmp/s3file/../../secret"
+        storage.save("secret", ContentFile(secret_content))
+        files = S3FileMiddleware.get_files_from_storage(
+            [os.path.join(get_aws_location(), cooked_key)],
+            # leaked signature for Storage location
+            S3FileMiddleware.sign_s3_key_prefix("custom/location"),
+        )
+        with pytest.raises(
+            SuspiciousFileOperation,
+            match="No upload folder, or file in the root of the upload folder.",
+        ):
+            next(files)
+
+    def test_get_files_from_storage__illegal_location_folder_name(self):
+        """
+        Relative path traversal into the path that starts with a different name.
+
+        See also: https://github.com/codingjoe/django-s3file/security/advisories/GHSA-67qg-7284-2277
+        """
+        secret_content = b"secret"
+        cooked_key = "tmp/s3file/secret"
+        storage.save("secret", ContentFile(secret_content))
+        files = S3FileMiddleware.get_files_from_storage(
+            [os.path.join("custom/location_evil", cooked_key)],
+            # leaked signature for Storage location
+            S3FileMiddleware.sign_s3_key_prefix("custom/location/tmp/s3file"),
+        )
+        with pytest.raises(
+            SuspiciousFileOperation,
+            match="Path traversal attempt, or file not in the upload folder.",
+        ):
+            next(files)
+
+    def test_get_files_from_storage__signed_noncanonical_traversal_rejected(
+        self, freeze_upload_folder
+    ):
+        """
+        Relative path traversal into the S3 location w/ leaked secret key.
+
+        See also: https://github.com/codingjoe/django-s3file/security/advisories/GHSA-67qg-7284-2277
+        """
+        storage.save("secret", ContentFile(b"secret"))
+
+        vulnerable_path = "custom/location/tmp/s3file/../../secret"
+        filename = "secret"
+        unsafe_upload_dir = pathlib.PurePosixPath(vulnerable_path[: -len(filename)])
+
+        files = S3FileMiddleware.get_files_from_storage(
+            [vulnerable_path],
+            S3FileMiddleware.sign_s3_key_prefix(unsafe_upload_dir),
+        )
+
+        with pytest.raises(
+            SuspiciousFileOperation,
+            match="No upload folder, or file in the root of the upload folder.",
+        ):
+            next(files)
+
+    def test_get_files_from_storage__signed_noncanonical_traversal_rejected__windows(
+        self, freeze_upload_folder
+    ):
+        """
+        Relative path traversal into the S3 location w/ leaked secret key.
+
+        See also: https://github.com/codingjoe/django-s3file/security/advisories/GHSA-67qg-7284-2277
+        """
+        storage.save("secret", ContentFile(b"secret"))
+
+        vulnerable_path = r"custom/location/tmp/s3file\..\..\secret"
+        filename = "secret"
+        unsafe_upload_dir = pathlib.PurePosixPath(vulnerable_path[: -len(filename)])
+
+        files = S3FileMiddleware.get_files_from_storage(
+            [vulnerable_path],
+            S3FileMiddleware.sign_s3_key_prefix(unsafe_upload_dir),
+        )
+
+        with pytest.raises(
+            SuspiciousFileOperation,
+            match="Path traversal attempt, or file not in the upload folder.",
+        ):
+            next(files)
+
+    def test_get_files_from_storage__illegal_location__root(self):
+        """
+        Relative path traversal outside the storage location w/ leaked valid signature.
+
+        See also: https://github.com/codingjoe/django-s3file/security/advisories/GHSA-67qg-7284-2277
+        """
+        secret_content = b"secret"
+        cooked_key = "tmp/s3file/../../../secret"
+        storage.save("secret", ContentFile(secret_content))
+        files = S3FileMiddleware.get_files_from_storage(
+            [os.path.join(get_aws_location(), cooked_key)],
+            # leaked signature for Storage location
+            S3FileMiddleware.sign_s3_key_prefix("custom"),
+        )
+        with pytest.raises(
+            SuspiciousFileOperation,
+            match="Path traversal attempt, or file not in the upload folder.",
+        ):
+            next(files)
 
     def test_process_request(self, freeze_upload_folder, rf):
         uploaded_file = SimpleUploadedFile("uploaded_file.txt", b"uploaded")
@@ -52,9 +221,8 @@ class TestS3FileMiddleware:
                 "file-s3f-signature": "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
             },
         )
-        with pytest.raises(PermissionDenied) as e:
+        with pytest.raises(PermissionDenied, match="Illegal filename!"):
             S3FileMiddleware(lambda x: None)(request)
-        assert "Illegal signature!" in str(e.value)
 
     def test_process_request__multiple_files(self, freeze_upload_folder, rf):
         storage.save("tmp/s3file/s3_file.txt", ContentFile(b"s3file"))
@@ -109,7 +277,7 @@ class TestS3FileMiddleware:
         S3FileMiddleware(lambda x: None)(request)
         assert not request.FILES.getlist("file")
         assert (
-            "File not found: custom/location/tmp/s3file/does_not_exist.txt"
+            "File not found: 'custom/location/tmp/s3file/does_not_exist.txt'"
             in caplog.text
         )
 
@@ -117,9 +285,8 @@ class TestS3FileMiddleware:
         request = rf.post(
             "/", data={"file": "tmp/s3file/does_not_exist.txt", "s3file": "file"}
         )
-        with pytest.raises(PermissionDenied) as e:
+        with pytest.raises(PermissionDenied, match="No signature provided."):
             S3FileMiddleware(lambda x: None)(request)
-        assert "No signature provided." in str(e.value)
 
     def test_process_request__wrong_signature(self, rf, caplog):
         request = rf.post(
@@ -130,9 +297,8 @@ class TestS3FileMiddleware:
                 "file-s3f-signature": "fake",
             },
         )
-        with pytest.raises(PermissionDenied) as e:
+        with pytest.raises(PermissionDenied, match="Illegal filename!"):
             S3FileMiddleware(lambda x: None)(request)
-        assert "Illegal signature!" in str(e.value)
 
     def test_sign_s3_key_prefix(self, rf):
         assert (

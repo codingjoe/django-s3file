@@ -7,12 +7,17 @@ import os
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage, default_storage
 from django.utils._os import safe_join
+from storages.utils import clean_name
 
 
 class S3MockStorage(FileSystemStorage):
     @property
     def location(self):
         return safe_join(os.path.abspath(self.base_location), get_aws_location())
+
+    def open(self, name, mode="rb"):
+        name = clean_name(name)
+        return super().open(name, mode=mode)
 
     class connection:
         class meta:

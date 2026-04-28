@@ -3,7 +3,9 @@ import pathlib
 
 from django.core import signing
 from django.core.exceptions import PermissionDenied, SuspiciousFileOperation
+from django.http.multipartparser import MultiPartParser
 from django.utils.crypto import constant_time_compare
+from storages.utils import clean_name
 
 from . import views
 from .storages import get_aws_location, local_dev, storage
@@ -18,8 +20,7 @@ class S3FileMiddleware:
     def __call__(self, request):
         file_fields = request.POST.getlist("s3file")
         for field_name in file_fields:
-            paths = request.POST.getlist(field_name)
-            if paths:
+            if paths := request.POST.getlist(field_name):
                 try:
                     signature = request.POST[f"{field_name}-s3f-signature"]
                 except KeyError:
@@ -29,7 +30,7 @@ class S3FileMiddleware:
                         field_name, list(self.get_files_from_storage(paths, signature))
                     )
                 except SuspiciousFileOperation as e:
-                    raise PermissionDenied("Illegal file name!") from e
+                    raise PermissionDenied("Illegal filename!") from e
 
         if local_dev and request.path == "/__s3_mock__/":
             return views.S3MockView.as_view()(request)
@@ -40,25 +41,39 @@ class S3FileMiddleware:
     def get_files_from_storage(cls, paths, signature):
         """Return S3 file where the name does not include the path."""
         location = get_aws_location()
-        for path in paths:
-            path = pathlib.PurePosixPath(path)
-            if not constant_time_compare(
-                cls.sign_s3_key_prefix(path.parent), signature
+        for vulnerable_path in paths:
+            cleaned_path = pathlib.PurePosixPath(clean_name(vulnerable_path))
+            if (
+                not (
+                    filename := MultiPartParser.sanitize_file_name(
+                        None, vulnerable_path
+                    )
+                )
+                or filename == "."
             ):
-                raise PermissionDenied("Illegal signature!")
-            try:
-                relative_path = str(path.relative_to(location))
-            except ValueError as e:
+                raise SuspiciousFileOperation("No filename, or dictionary provided.")
+            if ".." in cleaned_path.parts or not str(cleaned_path).startswith(location):
                 raise SuspiciousFileOperation(
-                    f"Path is outside the storage location: {path}"
-                ) from e
+                    "Path traversal attempt, or file not in the upload folder."
+                )
+            if (
+                not (upload_to := str(cleaned_path.parent)[len(location) + 1 :])
+                or upload_to == location
+            ):
+                raise SuspiciousFileOperation(
+                    "No upload folder, or file in the root of the upload folder."
+                )
 
+            if not constant_time_compare(
+                cls.sign_s3_key_prefix(str(cleaned_path.parent)), signature
+            ):
+                raise SuspiciousFileOperation("Illegal signature!")
             try:
-                f = storage.open(relative_path)
-                f.name = path.name
+                f = storage.open(cleaned_path.relative_to(location))
+                f.name = cleaned_path.name
                 yield f
             except (OSError, ValueError):
-                logger.exception("File not found: %s", path)
+                logger.exception("File not found: %r", vulnerable_path)
 
     @classmethod
     def sign_s3_key_prefix(cls, path):
