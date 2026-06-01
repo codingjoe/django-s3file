@@ -116,8 +116,7 @@ function uploadFiles(form, fileInput, name) {
   )
 }
 
-function clickSubmit(e) {
-  const submitButton = e.currentTarget
+function clickSubmit({ currentTarget: submitButton }) {
   const form = submitButton.closest("form")
   const submitInput = document.createElement("input")
   submitInput.type = "hidden"
