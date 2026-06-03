@@ -28,6 +28,10 @@ Coverage](https://codecov.io/gh/codingjoe/django-s3file/branch/main/graph/badge.
 [![GitHub
 license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/codingjoe/django-s3file/main/LICENSE)
 
+## Sponsors
+
+[![Sponsors](https://django.the-box.sh/sponsors/codingjoe/django-s3file.svg)](https://github.com/sponsors/codingjoe)
+
 ## Features
 
 - lightweight: less 200 lines
