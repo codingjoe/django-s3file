@@ -17,11 +17,11 @@ repos:
     hooks:
       - id: pyupgrade
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: 1.32.0
+    rev: 1.33.0
     hooks:
       - id: django-upgrade
   - repo: https://github.com/codingjoe/esupgrade
-    rev: 2025.22.2
+    rev: 2026.1.0
     hooks:
       - id: esupgrade
   - repo: https://github.com/hukkin/mdformat
@@ -34,7 +34,7 @@ repos:
           - mdformat-gfm
           - mdformat-gfm-alerts
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.9
+    rev: v0.16.10
     hooks:
       - id: ruff-check
         args: [--fix, --exit-non-zero-on-fix]
