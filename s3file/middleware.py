@@ -72,7 +72,7 @@ class S3FileMiddleware:
                 f = storage.open(cleaned_path.relative_to(location))
                 f.name = cleaned_path.name
                 yield f
-            except (OSError, ValueError):
+            except OSError, ValueError:
                 logger.exception("File not found: %r", vulnerable_path)
 
     @classmethod
