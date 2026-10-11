@@ -345,7 +345,9 @@ test("uploadS3Inputs - initializes and processes form inputs", async () => {
   assert.equal(s3fileInput.value, "document")
 
   // Check for signature input
-  const signatureInput = form.querySelector("input[name=document-s3f-signature]")
+  const signatureInput = form.querySelector(
+    "input[name=document-s3f-signature]",
+  )
   assert.equal(signatureInput !== null, true)
   assert.equal(signatureInput.value, "abc123")
 })
