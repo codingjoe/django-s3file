@@ -10,7 +10,7 @@ class S3OptimizedMockStorage(S3OptimizedUploadStorage):
     def _compress_content(self, content):
         return content
 
-    class bucket:
+    class Bucket:
         name = "test-bucket"
 
         class Object:
@@ -20,9 +20,11 @@ class S3OptimizedMockStorage(S3OptimizedUploadStorage):
                 self.copy_from_key = None
                 S3OptimizedMockStorage.created_objects[self.key] = self
 
-            def copy(self, s3_object, ExtraArgs):
+            def copy(self, s3_object, **kwargs):
                 self.copy_from_bucket = s3_object["Bucket"]
                 self.copy_from_key = s3_object["Key"]
+
+    bucket = Bucket
 
 
 class TestStorages:
