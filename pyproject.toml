@@ -6,7 +6,6 @@ requires = [ "flit-core>=3.12", "flit-scm", "wheel" ]
 name = "django-s3file"
 readme = "README.md"
 license = { file = "LICENSE" }
-authors = [ { name = "Johannes Maron", email = "johannes@maron.family" } ]
 requires-python = ">=3.14"
 classifiers = [
   "Development Status :: 6 - Mature",
@@ -31,14 +30,18 @@ dependencies = [
   "django>=5.2.13",
   "django-storages>=1.14.6",
 ]
-urls.Changelog = "https://github.com/codingjoe/django-s3file/releases"
-urls.Documentation = "https://github.com/codingjoe/django-s3file?tab=readme-ov-file"
-urls.Funding = "https://github.com/sponsors/codingjoe"
+[[project.authors]]
+name = "Johannes Maron"
+email = "johannes@maron.family"
+[project.urls]
+Changelog = "https://github.com/codingjoe/django-s3file/releases"
+Documentation = "https://github.com/codingjoe/django-s3file?tab=readme-ov-file"
+Funding = "https://github.com/sponsors/codingjoe"
 # https://packaging.python.org/en/latest/specifications/well-known-project-urls/#well-known-labels
-urls.Homepage = "https://github.com/codingjoe/django-s3file"
-urls.Issues = "https://github.com/codingjoe/django-s3file/issues"
-urls.Releasenotes = "https://github.com/codingjoe/django-s3file/releases/latest"
-urls.Source = "https://github.com/codingjoe/django-s3file"
+Homepage = "https://github.com/codingjoe/django-s3file"
+Issues = "https://github.com/codingjoe/django-s3file/issues"
+Releasenotes = "https://github.com/codingjoe/django-s3file/releases/latest"
+Source = "https://github.com/codingjoe/django-s3file"
 
 [dependency-groups]
 dev = [
@@ -55,18 +58,21 @@ test = [
 write_to = "s3file/_version.py"
 
 [tool.flit]
-module.name = "s3file"
+[tool.flit.module]
+name = "s3file"
 
 [tool.ruff]
 line-length = 88
 indent-width = 4
 src = [ "s3file", "tests" ]
-format.preview = true
-format.indent-style = "space"
-format.quote-style = "double"
-format.line-ending = "auto"
-format.skip-magic-trailing-comma = false
-lint.select = [
+[tool.ruff.format]
+preview = true
+indent-style = "space"
+quote-style = "double"
+line-ending = "auto"
+skip-magic-trailing-comma = false
+[tool.ruff.lint]
+select = [
   "D",   # pydocstyle
   "E",   # pycodestyle errors
   "EXE", # flake8-executable
@@ -80,26 +86,29 @@ lint.select = [
   "UP",  # pyupgrade
   "W",   # pycodestyle warnings
 ]
-lint.ignore = [ "D1", "E501", "PT012" ]
-lint.per-file-ignores."tests/**" = [ "S" ]
-lint.flake8-pytest-style.fixture-parentheses = false
-lint.flake8-pytest-style.mark-parentheses = false
-lint.isort.combine-as-imports = true
-lint.isort.force-wrap-aliases = true
-lint.isort.known-first-party = [ "s3file", "tests" ]
-lint.isort.section-order = [ "future", "standard-library", "third-party", "first-party", "local-folder" ]
-lint.isort.split-on-trailing-comma = true
-lint.pydocstyle.convention = "pep257"
+ignore = [ "D1", "E501", "PT012" ]
+per-file-ignores."tests/**" = [ "S" ]
+flake8-pytest-style.fixture-parentheses = false
+flake8-pytest-style.mark-parentheses = false
+isort.combine-as-imports = true
+isort.force-wrap-aliases = true
+isort.known-first-party = [ "s3file", "tests" ]
+isort.section-order = [ "future", "standard-library", "third-party", "first-party", "local-folder" ]
+isort.split-on-trailing-comma = true
+pydocstyle.convention = "pep257"
 
 [tool.pytest]
-ini_options.minversion = "6.0"
-ini_options.testpaths = [
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
   "tests",
 ]
-ini_options.addopts = "--cov --cov-report=xml --cov-report=term --tb=short -rxs"
-ini_options.DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
+addopts = "--cov --cov-report=xml --cov-report=term --tb=short -rxs"
+DJANGO_SETTINGS_MODULE = "tests.testapp.settings"
 
 [tool.coverage]
-run.source = [ "s3file" ]
-report.skip_covered = true
-report.show_missing = true
+[tool.coverage.run]
+source = [ "s3file" ]
+[tool.coverage.report]
+skip_covered = true
+show_missing = true
