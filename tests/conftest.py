@@ -36,7 +36,8 @@ def driver(request):
 
 @pytest.fixture(autouse=True)
 def log_rejected_mock_uploads(monkeypatch):
-    """Report what a browser sent when the mock S3 endpoint sees no file.
+    """
+    Report what a browser sent when the mock S3 endpoint sees no file.
 
     A browser that drops the file from the presigned POST otherwise only shows
     up as a page load timeout.

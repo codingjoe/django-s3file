@@ -47,7 +47,7 @@ class S3MockView(generic.View):
             '<?xml version="1.0" encoding="UTF-8"?>'
             "<PostResponse>"
             f"<Location>{settings.MEDIA_URL}{key}</Location>"
-            f"<Bucket>{getattr(settings, 'AWS_STORAGE_BUCKET_NAME')}</Bucket>"
+            f"<Bucket>{settings.AWS_STORAGE_BUCKET_NAME}</Bucket>"
             f"<Key>{key}</Key>"
             f'<ETag>"{etag}"</ETag>'
             "</PostResponse>",
