@@ -24,13 +24,15 @@ class S3FileMiddleware:
                 try:
                     signature = request.POST[f"{field_name}-s3f-signature"]
                 except KeyError:
-                    raise PermissionDenied("No signature provided.")
+                    msg = "No signature provided."
+                    raise PermissionDenied(msg)
                 try:
                     request.FILES.setlist(
                         field_name, list(self.get_files_from_storage(paths, signature))
                     )
                 except SuspiciousFileOperation as e:
-                    raise PermissionDenied("Illegal filename!") from e
+                    msg = "Illegal filename!"
+                    raise PermissionDenied(msg) from e
 
         if local_dev and request.path == "/__s3_mock__/":
             return views.S3MockView.as_view()(request)
@@ -51,23 +53,23 @@ class S3FileMiddleware:
                 )
                 or filename == "."
             ):
-                raise SuspiciousFileOperation("No filename, or dictionary provided.")
+                msg = "No filename, or dictionary provided."
+                raise SuspiciousFileOperation(msg)
             if ".." in cleaned_path.parts or not str(cleaned_path).startswith(location):
-                raise SuspiciousFileOperation(
-                    "Path traversal attempt, or file not in the upload folder."
-                )
+                msg = "Path traversal attempt, or file not in the upload folder."
+                raise SuspiciousFileOperation(msg)
             if (
                 not (upload_to := str(cleaned_path.parent)[len(location) + 1 :])
                 or upload_to == location
             ):
-                raise SuspiciousFileOperation(
-                    "No upload folder, or file in the root of the upload folder."
-                )
+                msg = "No upload folder, or file in the root of the upload folder."
+                raise SuspiciousFileOperation(msg)
 
             if not constant_time_compare(
                 cls.sign_s3_key_prefix(str(cleaned_path.parent)), signature
             ):
-                raise SuspiciousFileOperation("Illegal signature!")
+                msg = "Illegal signature!"
+                raise SuspiciousFileOperation(msg)
             try:
                 f = storage.open(cleaned_path.relative_to(location))
                 f.name = cleaned_path.name

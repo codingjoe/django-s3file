@@ -1,6 +1,7 @@
 import base64
 import hmac
 import http
+from pathlib import Path
 
 from s3file import views
 
@@ -22,7 +23,7 @@ class TestS3MockView:
         assert response.status_code == http.HTTPStatus.BAD_REQUEST
 
     def test_post__created(self, client, upload_file):
-        with open(upload_file) as fp:
+        with Path(upload_file).open() as fp:
             response = client.post(
                 self.url,
                 data={
@@ -42,7 +43,7 @@ class TestS3MockView:
         bad_signature = base64.b64encode(
             hmac.new(b"eve", (self.policy + self.date).encode(), "sha256").digest()
         ).decode()
-        with open(upload_file) as fp:
+        with Path(upload_file).open() as fp:
             response = client.post(
                 self.url,
                 data={
@@ -60,7 +61,7 @@ class TestS3MockView:
 
     def test_post__not_a_signature(self, client, upload_file):
         bad_signature = "eve"
-        with open(upload_file) as fp:
+        with Path(upload_file).open() as fp:
             response = client.post(
                 self.url,
                 data={

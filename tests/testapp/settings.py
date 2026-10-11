@@ -1,7 +1,7 @@
-import os.path
 import tempfile
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = Path(__file__).resolve().parent
 DEBUG = True
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]

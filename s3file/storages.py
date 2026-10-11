@@ -2,7 +2,7 @@ import base64
 import datetime
 import hmac
 import json
-import os
+from pathlib import Path
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage, default_storage
@@ -13,15 +13,18 @@ from storages.utils import clean_name
 class S3MockStorage(FileSystemStorage):
     @property
     def location(self):
-        return safe_join(os.path.abspath(self.base_location), get_aws_location())
+        # absolute() keeps the symlink semantics of os.path.abspath().
+        return safe_join(Path(self.base_location).absolute(), get_aws_location())
 
     def open(self, name, mode="rb"):
         name = clean_name(name)
         return super().open(name, mode=mode)
 
-    class connection:
-        class meta:
-            class client:
+    # S3MockStorage mimics the boto3 resource attributes that S3FileInputMixin
+    # accesses as connection.meta.client and bucket.
+    class Connection:
+        class Meta:
+            class Client:
                 @staticmethod
                 def generate_presigned_post(bucket_name, key, **policy):
                     policy = json.dumps(policy).encode()
@@ -52,8 +55,16 @@ class S3MockStorage(FileSystemStorage):
                         "fields": {"x-amz-signature": signature, **fields},
                     }
 
-    class bucket:
+            client = Client
+
+        meta = Meta
+
+    connection = Connection
+
+    class Bucket:
         name = "test-bucket"
+
+    bucket = Bucket
 
 
 local_dev = isinstance(default_storage, FileSystemStorage)

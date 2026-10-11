@@ -1,13 +1,13 @@
 import json
 import os
 from contextlib import contextmanager
+from pathlib import Path
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms import ClearableFileInput
 from django.urls import reverse_lazy
 from django.utils.text import slugify
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import staleness_of
 from selenium.webdriver.support.wait import WebDriverWait
@@ -44,11 +44,17 @@ def send_file_paths(driver, file_input, paths):
     return stored
 
 
+def assert_no_js_error(driver):
+    """Fail with the JavaScript error the page reported, if any."""
+    errors = driver.find_elements(By.XPATH, "//body[@JSError]")
+    assert not errors, errors[0].get_attribute("JSError")
+
+
 class TestS3FileInput:
     create_url = reverse_lazy("example-create")
 
     def test_value_from_datadict(self, freeze_upload_folder, client, upload_file):
-        with open(upload_file) as f:
+        with Path(upload_file).open() as f:
             uploaded_file = storage.save(freeze_upload_folder / "test.jpg", f)
         response = client.post(
             self.create_url,
@@ -155,9 +161,7 @@ class TestS3FileInput:
     def test_no_js_error(self, driver, live_server):
         driver.get(live_server + self.create_url)
 
-        with pytest.raises(NoSuchElementException):
-            error = driver.find_element(By.XPATH, "//body[@JSError]")
-            pytest.fail(error.get_attribute("JSError"))
+        assert_no_js_error(driver)
 
     @pytest.mark.selenium
     def test_file_insert(
@@ -171,9 +175,7 @@ class TestS3FileInput:
             file_input.submit()
         assert storage.exists(f"tmp/s3file/{slugify(request.node.name)}.txt")
 
-        with pytest.raises(NoSuchElementException):
-            error = driver.find_element(By.XPATH, "//body[@JSError]")
-            pytest.fail(error.get_attribute("JSError"))
+        assert_no_js_error(driver)
 
     @pytest.mark.selenium
     def test_file_update(
@@ -192,9 +194,7 @@ class TestS3FileInput:
             file_input.submit()
         assert storage.exists(f"tmp/s3file/{slugify(request.node.name)}.txt")
 
-        with pytest.raises(NoSuchElementException):
-            error = driver.find_element(By.XPATH, "//body[@JSError]")
-            pytest.fail(error.get_attribute("JSError"))
+        assert_no_js_error(driver)
 
     @pytest.mark.selenium
     def test_file_insert_submit_value(
@@ -270,10 +270,10 @@ class TestS3FileInput:
         response = json.loads(driver.find_elements(By.CSS_SELECTOR, "pre")[0].text)
         assert response["FILES"] == {
             "file": [
-                os.path.basename(upload_file),
-                os.path.basename(another_upload_file),
+                Path(upload_file).name,
+                Path(another_upload_file).name,
             ],
-            "other_file": [os.path.basename(yet_another_upload_file)],
+            "other_file": [Path(yet_another_upload_file).name],
         }
 
     def test_media(self):
@@ -281,4 +281,4 @@ class TestS3FileInput:
 
     def test_upload_folder(self):
         assert "custom/location/tmp/s3file/" in ClearableFileInput().upload_folder
-        assert len(os.path.basename(ClearableFileInput().upload_folder)) == 22
+        assert len(Path(ClearableFileInput().upload_folder).name) == 22

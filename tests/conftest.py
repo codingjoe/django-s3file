@@ -1,3 +1,4 @@
+import logging
 import tempfile
 from pathlib import Path
 
@@ -10,6 +11,8 @@ from selenium.common.exceptions import WebDriverException
 
 from s3file.storages import get_aws_location
 from s3file.views import S3MockView
+
+logger = logging.getLogger(__name__)
 
 
 def pytest_configure(config):
@@ -46,13 +49,14 @@ def log_rejected_mock_uploads(monkeypatch):
 
     def post(self, request):
         if "file" not in request.FILES:
-            print(
-                "mock upload without a file:"
-                f" content_type={request.content_type!r}"
-                f" content_length={request.headers.get('content-length')!r}"
-                f" post_keys={list(request.POST)!r}"
-                f" post_file_length={len(request.POST.get('file', ''))!r}"
-                f" files={list(request.FILES)!r}"
+            logger.warning(
+                "mock upload without a file: content_type=%r content_length=%r"
+                " post_keys=%r post_file_length=%r files=%r",
+                request.content_type,
+                request.headers.get("content-length"),
+                list(request.POST),
+                len(request.POST.get("file", "")),
+                list(request.FILES),
             )
         return original(self, request)
 

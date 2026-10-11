@@ -1,4 +1,3 @@
-import os
 import pathlib
 
 import pytest
@@ -17,7 +16,7 @@ class TestS3FileMiddleware:
             "tmp/s3file/test_get_files_from_storage", ContentFile(content)
         )
         files = S3FileMiddleware.get_files_from_storage(
-            [os.path.join(get_aws_location(), name)],
+            [str(pathlib.Path(get_aws_location()) / name)],
             "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
         )
         file = next(files)
@@ -35,7 +34,7 @@ class TestS3FileMiddleware:
         cooked_key = r"tmp/s3file/..\..\secret"
         storage.save("secret", ContentFile(secret_content))
         files = S3FileMiddleware.get_files_from_storage(
-            [os.path.join(get_aws_location(), cooked_key)],
+            [str(pathlib.Path(get_aws_location()) / cooked_key)],
             "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
         )
         with pytest.raises(
@@ -56,7 +55,7 @@ class TestS3FileMiddleware:
         cooked_key = "tmp/s3file/../../secret"
         storage.save("secret", ContentFile(secret_content))
         files = S3FileMiddleware.get_files_from_storage(
-            [os.path.join(get_aws_location(), cooked_key)],
+            [str(pathlib.Path(get_aws_location()) / cooked_key)],
             "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
         )
         with pytest.raises(
@@ -71,9 +70,10 @@ class TestS3FileMiddleware:
 
         See also: https://github.com/codingjoe/django-s3file/security/advisories/GHSA-67qg-7284-2277
         """
-        cooked_key = r"tmp/s3file/something/."
+        # Path joining strips a trailing "/.", so append it afterwards.
+        cooked_key = "tmp/s3file/something"
         files = S3FileMiddleware.get_files_from_storage(
-            [os.path.join(get_aws_location(), cooked_key)],
+            [f"{pathlib.Path(get_aws_location()) / cooked_key}/."],
             "VRIPlI1LCjUh1EtplrgxQrG8gSAaIwT48mMRlwaCytI",
         )
         with pytest.raises(
@@ -91,7 +91,7 @@ class TestS3FileMiddleware:
         cooked_key = "tmp/s3file/../../secret"
         storage.save("secret", ContentFile(secret_content))
         files = S3FileMiddleware.get_files_from_storage(
-            [os.path.join(get_aws_location(), cooked_key)],
+            [str(pathlib.Path(get_aws_location()) / cooked_key)],
             # leaked signature for Storage location
             S3FileMiddleware.sign_s3_key_prefix("custom/location"),
         )
@@ -111,7 +111,7 @@ class TestS3FileMiddleware:
         cooked_key = "tmp/s3file/secret"
         storage.save("secret", ContentFile(secret_content))
         files = S3FileMiddleware.get_files_from_storage(
-            [os.path.join("custom/location_evil", cooked_key)],
+            [str(pathlib.Path("custom/location_evil") / cooked_key)],
             # leaked signature for Storage location
             S3FileMiddleware.sign_s3_key_prefix("custom/location/tmp/s3file"),
         )
@@ -181,7 +181,7 @@ class TestS3FileMiddleware:
         cooked_key = "tmp/s3file/../../../secret"
         storage.save("secret", ContentFile(secret_content))
         files = S3FileMiddleware.get_files_from_storage(
-            [os.path.join(get_aws_location(), cooked_key)],
+            [str(pathlib.Path(get_aws_location()) / cooked_key)],
             # leaked signature for Storage location
             S3FileMiddleware.sign_s3_key_prefix("custom"),
         )
