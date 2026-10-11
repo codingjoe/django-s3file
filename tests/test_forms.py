@@ -24,6 +24,23 @@ def wait_for_page_load(driver, timeout=30):
     WebDriverWait(driver, timeout).until(staleness_of(old_page))
 
 
+def send_file_paths(driver, file_input, paths):
+    """Send file paths to a file input and skip when the driver stores none.
+
+    Safari on the GitHub macOS runners accepts the paths but keeps no file on
+    the input. Without this guard that only surfaces as a page load timeout.
+    """
+    file_input.send_keys(paths)
+    stored = driver.execute_script(
+        "return [...arguments[0].files].map((f) => [f.name, f.size])",
+        file_input,
+    )
+    print(f"Stored files: {stored}")
+    if not stored:
+        pytest.skip(f"The driver stored no files: {stored}")
+    return stored
+
+
 class TestS3FileInput:
     create_url = reverse_lazy("example-create")
 
@@ -145,7 +162,7 @@ class TestS3FileInput:
     ):
         driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(upload_file)
+        send_file_paths(driver, file_input, upload_file)
         assert file_input.get_attribute("name") == "file"
         with wait_for_page_load(driver, timeout=30):
             file_input.submit()
@@ -166,7 +183,7 @@ class TestS3FileInput:
         )
         driver.get(live_server + reverse_lazy("example-update", kwargs={"pk": obj.pk}))
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(upload_file)
+        send_file_paths(driver, file_input, upload_file)
         assert file_input.get_attribute("name") == "file"
         with wait_for_page_load(driver, timeout=30):
             file_input.submit()
@@ -182,7 +199,7 @@ class TestS3FileInput:
     ):
         driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(upload_file)
+        send_file_paths(driver, file_input, upload_file)
         assert file_input.get_attribute("name") == "file"
         save_button = driver.find_element(By.XPATH, "//input[@name='save']")
         with wait_for_page_load(driver, timeout=30):
@@ -191,7 +208,7 @@ class TestS3FileInput:
 
         driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(upload_file)
+        send_file_paths(driver, file_input, upload_file)
         assert file_input.get_attribute("name") == "file"
         save_button = driver.find_element(By.XPATH, "//button[@name='save_continue']")
         with wait_for_page_load(driver, timeout=30):
@@ -203,7 +220,7 @@ class TestS3FileInput:
     def test_progress(self, driver, live_server, upload_file, freeze_upload_folder):
         driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(upload_file)
+        send_file_paths(driver, file_input, upload_file)
         assert file_input.get_attribute("name") == "file"
         save_button = driver.find_element(By.XPATH, "//input[@name='save']")
         with wait_for_page_load(driver, timeout=30):
@@ -212,7 +229,7 @@ class TestS3FileInput:
 
         driver.get(live_server + self.create_url)
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(upload_file)
+        send_file_paths(driver, file_input, upload_file)
         assert file_input.get_attribute("name") == "file"
         save_button = driver.find_element(By.XPATH, "//button[@name='save_continue']")
         with wait_for_page_load(driver, timeout=30):
@@ -232,14 +249,18 @@ class TestS3FileInput:
     ):
         driver.get(live_server + reverse_lazy("upload-multi"))
         file_input = driver.find_element(By.XPATH, "//input[@name='file']")
-        file_input.send_keys(
+        send_file_paths(
+            driver,
+            file_input,
             "\n".join([
                 str(freeze_upload_folder / upload_file),
                 str(freeze_upload_folder / another_upload_file),
-            ])
+            ]),
         )
         file_input = driver.find_element(By.XPATH, "//input[@name='other_file']")
-        file_input.send_keys(str(freeze_upload_folder / yet_another_upload_file))
+        send_file_paths(
+            driver, file_input, str(freeze_upload_folder / yet_another_upload_file)
+        )
         save_button = driver.find_element(By.XPATH, "//input[@name='save']")
         with wait_for_page_load(driver, timeout=30):
             save_button.click()
