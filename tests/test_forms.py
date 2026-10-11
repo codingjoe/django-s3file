@@ -25,7 +25,8 @@ def wait_for_page_load(driver, timeout=30):
 
 
 def send_file_paths(driver, file_input, paths):
-    """Send file paths to a file input and skip when the upload cannot work.
+    """
+    Send file paths to a file input and skip when the upload cannot work.
 
     Safari on the GitHub runners keeps the file on the input but posts an empty
     body to the presigned URL, so the upload can never succeed there.
