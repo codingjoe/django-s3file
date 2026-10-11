@@ -8,9 +8,6 @@
   "scripts": {
     "test": "node --test --experimental-test-coverage"
   },
-  "prettier": {
-    "semi": false
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/codingjoe/django-s3file.git"

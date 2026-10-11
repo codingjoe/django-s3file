@@ -151,9 +151,11 @@ function uploadS3Inputs(form) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  let forms = [...document.querySelectorAll("input[type=file].s3file")].map((input) => {
-    return input.closest("form")
-  })
+  let forms = [...document.querySelectorAll("input[type=file].s3file")].map(
+    (input) => {
+      return input.closest("form")
+    },
+  )
   forms = new Set(forms)
   forms.forEach((form) => {
     form.addEventListener("submit", (e) => {
